@@ -12,9 +12,26 @@ const Notebook = require('./models/Notebook');
 const Emprestimo = require('./models/Emprestimo'); 
 
 const app = express();
-app.use(cors());
+
+// ⚡️ CORREÇÃO 1: CONFIGURAÇÃO EXPLÍCITA DO CORS para ambientes distribuídos (Render)
+app.use(cors({
+    origin: '*', // Permite qualquer origem para o ambiente de deploy
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+}));
+
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, '../frontend')));
+
+// ⚡️ CORREÇÃO 2: Mapeamento de todas as subpastas estáticas do frontend
+// Serve a raiz do frontend (onde está global_config.js)
+app.use(express.static(path.join(__dirname, '../frontend'))); 
+// Mapeia todas as subpastas para que os arquivos CSS/JS sejam encontrados
+app.use(express.static(path.join(__dirname, '../frontend/login')));
+app.use(express.static(path.join(__dirname, '../frontend/dashboard')));
+app.use(express.static(path.join(__dirname, '../frontend/usuarios')));
+app.use(express.static(path.join(__dirname, '../frontend/notebooks')));
+app.use(express.static(path.join(__dirname, '../frontend/emprestimos')));
+
 const JWT_SECRET = 'sua_chave_secreta_muito_segura_123';
 
 const autenticarToken = (req, res, next) => {
@@ -102,7 +119,7 @@ app.delete('/usuarios/:id', autenticarToken, async (req, res) => {
         const userId = parseInt(req.params.id); 
         
         if (userId === 1) { 
-             return res.status(403).json({ message: 'Não é permitido excluir o administrador principal.' });
+            return res.status(403).json({ message: 'Não é permitido excluir o administrador principal.' });
         }
 
       
@@ -125,7 +142,7 @@ app.delete('/usuarios/:id', autenticarToken, async (req, res) => {
     } catch (error) {
 
         if (error.code === '23503') {
-             return res.status(403).json({ message: 'Não é permitido excluir este usuário, pois ele está vinculado a empréstimos no histórico.' });
+            return res.status(403).json({ message: 'Não é permitido excluir este usuário, pois ele está vinculado a empréstimos no histórico.' });
         }
         res.status(500).json({ message: error.message || 'Erro interno no servidor.' });
     }
@@ -218,7 +235,7 @@ app.put('/notebooks/:id', autenticarToken, async (req, res) => {
         const notebookAtualizado = await Notebook.update(notebookId, dadosAtualizados); 
 
         if (!notebookAtualizado) {
-             return res.status(404).json({ message: 'Notebook não encontrado.' });
+            return res.status(404).json({ message: 'Notebook não encontrado.' });
         }
         
         res.status(200).json({ 
@@ -250,7 +267,7 @@ app.delete('/notebooks/:id', autenticarToken, async (req, res) => {
     } catch (error) {
 
         if (error.code === '23503') { 
-             return res.status(403).json({ message: 'Não é permitido excluir este notebook, pois ele está vinculado a empréstimos no histórico.' });
+            return res.status(403).json({ message: 'Não é permitido excluir este notebook, pois ele está vinculado a empréstimos no histórico.' });
         }
         res.status(500).json({ message: error.message || 'Erro interno no servidor.' });
     }

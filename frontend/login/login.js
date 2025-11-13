@@ -1,19 +1,17 @@
 // frontend/login/login.js (Código Atualizado e Corrigido)
 
-document.getElementById('loginForm').addEventListener('submit', async function(event) {
+// CORREÇÃO: Usando 'login-form' para corresponder ao ID no HTML
+document.getElementById('login-form').addEventListener('submit', async function(event) {
     event.preventDefault();
 
     const email = document.getElementById('email').value;
     const senha = document.getElementById('senha').value;
     const messageEl = document.getElementById('message');
     
-    // Altera o ID do formulário se for diferente no HTML
-    // const loginForm = document.getElementById('login-form'); 
-    
     // Verifica se o formulário e os elementos existem
     if (!email || !senha) {
         messageEl.textContent = 'Por favor, preencha todos os campos.';
-        messageEl.classList.add('error');
+        messageEl.className = 'message error'; // Usa className para substituir classes existentes
         return;
     }
 
@@ -21,7 +19,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     messageEl.className = 'message';
 
     try {
-        // CORREÇÃO AQUI: Usa a variável global API_BASE_URL
+        // Usa a variável global API_BASE_URL (assumindo que está em global_config.js)
         const response = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -37,10 +35,10 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         // Login Bem-Sucedido
         messageEl.textContent = 'Login bem-sucedido! Redirecionando...';
-        messageEl.classList.add('success');
+        messageEl.className = 'message success';
         
         // Armazenamento de dados
-        localStorage.setItem('genius_token', data.token); // Recomendado usar prefixo para chaves
+        localStorage.setItem('genius_token', data.token);
         
         if(data.usuario && data.usuario.nome) {
             localStorage.setItem('genius_usuarioNome', data.usuario.nome);
@@ -48,15 +46,14 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         // Redirecionamento
         setTimeout(() => {
-            // Certifique-se de que o caminho está correto
-            // Se você está em /frontend/login/login.html, o caminho para o dashboard é '../dashboard/dashboard.html'
+            // O caminho relativo está correto: volta uma pasta (frontend) e entra em dashboard
             window.location.href = '../dashboard/dashboard.html'; 
         }, 1000); 
 
     } catch (error) {
         // Exibe o erro de volta para o usuário
         messageEl.textContent = error.message;
-        messageEl.classList.add('error');
+        messageEl.className = 'message error';
         console.error("Erro no processo de Login:", error);
     }
 });
