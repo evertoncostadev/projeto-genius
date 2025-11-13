@@ -1,5 +1,10 @@
 // EM: frontend/usuarios/usuarios.js
-// FUNÇÕES DE UTILIDADE (MANTIDAS)
+
+// Variável global para usar showCustomAlert ou fallback para alert()
+// É essencial que a função showCustomAlert esteja definida no seu dashboard.js ou outro script global.
+const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
+
+// FUNÇÕES DE UTILIDADE
 // ----------------------------------------------------------------------
 
 function formatarCPF(cpf) {
@@ -49,11 +54,11 @@ function validarCPF(cpf) {
 }
 
 function validarArquivo(fileInput, editUserId) { 
-    const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
     const file = fileInput.files[0];
     
     // Verificação de obrigatoriedade
-    if (!editUserId && !file) {
+    // Se não for edição E o arquivo for nulo, dispara o alerta
+    if (!editUserId && fileInput.required && !file) {
         showAlert('Arquivo Obrigatório', `O arquivo "${fileInput.name.replace('-file', '')}" é obrigatório.`, 'error');
         return false;
     }
@@ -85,14 +90,13 @@ function validarArquivo(fileInput, editUserId) {
 }
 
 
-// FUNÇÃO DE LIMPEZA (NOVA)
+// FUNÇÃO DE LIMPEZA
 // ----------------------------------------------------------------------
 function limparCamposEndereco() {
     document.getElementById('rua').value = '';
     document.getElementById('bairro').value = '';
     document.getElementById('cidade').value = '';
     document.getElementById('uf').value = '';
-    // Não limpa o CEP para que o usuário possa corrigir
 }
 
 
@@ -102,7 +106,7 @@ function limparCamposEndereco() {
 async function loadUserDataForEdit(userId) {
     const token = localStorage.getItem('token');
     if (!token) {
-        showCustomAlert('Erro de Autenticação', 'Sua sessão expirou. Faça login novamente.', 'error');
+        showAlert('Erro de Autenticação', 'Sua sessão expirou. Faça login novamente.', 'error');
         return;
     }
 
@@ -146,18 +150,17 @@ async function loadUserDataForEdit(userId) {
 
         const groupTipoConta = document.getElementById('group-tipo-conta');
         const groupSenha = document.getElementById('group-senha');
-        // Mantive a lógica de esconder a senha e tipo de conta na edição
         if (groupTipoConta) groupTipoConta.style.display = 'none';
         if (groupSenha) groupSenha.style.display = 'none';
 
     } catch (error) {
         console.error(error);
-        showCustomAlert('Erro ao Carregar', 'Não foi possível carregar os dados do usuário.', 'error');
+        showAlert('Erro ao Carregar', 'Não foi possível carregar os dados do usuário.', 'error');
     }
 }
 
 
-// FUNÇÃO DE SUBMISSÃO (MANTIDA)
+// FUNÇÃO DE SUBMISSÃO (CORRIGIDA)
 // ----------------------------------------------------------------------
 function setupFormSubmit(form, editUserId) {
     form.addEventListener('submit', async (e) => {
@@ -165,7 +168,7 @@ function setupFormSubmit(form, editUserId) {
         
         const token = localStorage.getItem('token');
         if (!token) {
-            showCustomAlert('Erro de Autenticação', 'Sua sessão expirou. Faça login novamente.', 'error');
+            showAlert('Erro de Autenticação', 'Sua sessão expirou. Faça login novamente.', 'error');
             return;
         }
 
@@ -177,23 +180,23 @@ function setupFormSubmit(form, editUserId) {
         formData.set('cpf', cpfLimpo);
         formData.set('telefone', telefoneLimpo);
 
+        // --- VALIDAÇÕES ---
         const dataNasc = new Date(formData.get('data_nascimento'));
 
         if (cpfLimpo.length !== 11) {
-            showCustomAlert('Erro de Validação', 'CPF inválido. Deve conter 11 números.', 'error'); return;
+            showAlert('Erro de Validação', 'CPF inválido. Deve conter 11 números.', 'error'); return;
         }
         if (!validarCPF(cpfLimpo)) { 
-            showCustomAlert('Erro de Validação', 'O CPF digitado é matematicamente inválido.', 'error'); return;
+            showAlert('Erro de Validação', 'O CPF digitado é matematicamente inválido.', 'error'); return;
         }
-        // Correção na validação de telefone para corresponder à formatação
         if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
-            showCustomAlert('Erro de Validação', 'Telefone inválido. Deve conter 10 (DDD+Número) ou 11 (DDD+9+Número) números.', 'error'); return;
+            showAlert('Erro de Validação', 'Telefone inválido. Deve conter 10 (DDD+Número) ou 11 (DDD+9+Número) números.', 'error'); return;
         }
         
         const hoje = new Date();
         hoje.setHours(0, 0, 0, 0); 
         if (dataNasc > hoje) {
-            showCustomAlert('Erro de Validação', 'A data de nascimento não pode ser no futuro.', 'error'); return;
+            showAlert('Erro de Validação', 'A data de nascimento não pode ser no futuro.', 'error'); return;
         }
 
         const declaracaoInput = document.getElementById('declaracao-file');
@@ -205,11 +208,22 @@ function setupFormSubmit(form, editUserId) {
         const tipoConta = formData.get('tipo_conta');
         const senha = formData.get('senha');
 
-        if (tipoConta === 'admin' && !editUserId && !senha) {
-            showCustomAlert('Erro de Validação', 'O campo "Senha Provisória" é obrigatório ao criar um Administrador.', 'error');
+        if (tipoConta === 'admin' && !editUserId && (!senha || senha.length < 6)) {
+            showAlert('Erro de Validação', 'O campo "Senha Provisória" é obrigatório ao criar um Administrador e deve ter pelo menos 6 caracteres.', 'error');
             return; 
         }
 
+        // Se for edição, remove campos que o PUT não deve alterar
+        if (editUserId) {
+            formData.delete('tipo_conta');
+            formData.delete('senha');
+        }
+        // Se for aluno, remove a senha do payload
+        if (tipoConta === 'comum' && !editUserId) {
+            formData.delete('senha');
+        }
+
+        // --- INÍCIO DO ENVIO ---
         
         const submitButton = form.querySelector('.btn-submit-usuario');
         submitButton.disabled = true;
@@ -219,15 +233,15 @@ function setupFormSubmit(form, editUserId) {
             let response;
             let url = 'http://localhost:3000/usuarios';
             let method = 'POST';
+            
+            // CORREÇÃO CRUCIAL: Apenas Authorization é necessário no header. 
+            // O Content-Type é definido automaticamente pelo navegador como 'multipart/form-data'.
             let headers = { 'Authorization': `Bearer ${token}` }; 
             let body = formData; 
 
             if (editUserId) {
                 url = `http://localhost:3000/usuarios/${editUserId}`;
                 method = 'PUT';
-                // Remove campos irrelevantes para PUT
-                formData.delete('tipo_conta');
-                formData.delete('senha');
             }
 
             response = await fetch(url, {
@@ -238,15 +252,16 @@ function setupFormSubmit(form, editUserId) {
 
             const result = await response.json();
             if (!response.ok) {
-                throw new Error(result.message || 'Erro ao salvar.');
+                // Captura a mensagem de erro do backend para exibir no modal
+                throw new Error(result.message || 'Erro ao salvar. Verifique a resposta do servidor.');
             }
 
             if (editUserId) {
-                showCustomAlert('Sucesso!', 'Usuário atualizado com sucesso.', 'success');
+                showAlert('Sucesso!', 'Usuário atualizado com sucesso.', 'success');
                 sessionStorage.removeItem('editUserId'); 
                 window.location.hash = '#usuarios_buscar'; 
             } else {
-                showCustomAlert('Sucesso!', 'Usuário cadastrado com sucesso.', 'success');
+                showAlert('Sucesso!', 'Usuário cadastrado com sucesso.', 'success');
                 form.reset(); 
                 
                 // Limpa os displays de nome de arquivo após resetar o form
@@ -264,7 +279,7 @@ function setupFormSubmit(form, editUserId) {
         
         } catch (error) {
             console.error('Erro no submit:', error);
-            showCustomAlert('Erro ao Salvar', error.message, 'error');
+            showAlert('Erro ao Salvar', error.message, 'error');
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = editUserId ? 'Salvar Alterações' : 'Cadastrar Usuário';
@@ -276,7 +291,6 @@ function setupFormSubmit(form, editUserId) {
 // FUNÇÃO DE EXTRAS (CORRIGIDA)
 // ----------------------------------------------------------------------
 function setupFormExtras(editUserId) { 
-    const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
 
     const dataNascimentoInput = document.getElementById('data_nascimento');
     if (dataNascimentoInput) {
@@ -300,7 +314,7 @@ function setupFormExtras(editUserId) {
 
     const cepInput = document.getElementById('cep');
     if (cepInput) {
-        // NOVO: Formatação da máscara do CEP no input
+        // Formatação da máscara do CEP no input
         cepInput.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 5) {
@@ -309,9 +323,9 @@ function setupFormExtras(editUserId) {
             e.target.value = value.substring(0, 9);
         });
 
-        // CORREÇÃO AQUI: Lógica de busca e tratamento de erro de CEP
+        // Lógica de busca e tratamento de erro de CEP
         cepInput.addEventListener('blur', async (e) => {
-            const cep = e.target.value.replace(/\D/g, ''); // Limpa o CEP para a busca
+            const cep = e.target.value.replace(/\D/g, ''); 
             
             if (cep.length === 8) {
                 try {
@@ -320,7 +334,6 @@ function setupFormExtras(editUserId) {
                     if (!response.ok) {
                         limparCamposEndereco();
                         const errorData = await response.json(); 
-                        // Lança um erro para ser capturado no catch
                         throw new Error(errorData.message || 'CEP não encontrado'); 
                     }
                     
@@ -338,25 +351,22 @@ function setupFormExtras(editUserId) {
                     showAlert('Erro no CEP', error.message || 'Não foi possível buscar o CEP. Tente novamente.', 'error');
                 }
             } else if (cep.length > 0) {
-                 // Se digitou algo, mas não 8 dígitos, limpa os campos de endereço e avisa
                  limparCamposEndereco();
                  showAlert('CEP Incompleto', 'Por favor, digite 8 dígitos do CEP.', 'warning');
             }
         });
     }
 
-    // Lógica para mostrar o nome do arquivo (Ajustada para usar validarArquivo)
+    // Lógica para mostrar o nome do arquivo
     const declaracaoInput = document.getElementById('declaracao-file');
     const declaracaoName = document.getElementById('declaracao-name');
     if (declaracaoInput) {
         declaracaoInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                // Valida o arquivo ANTES de exibir o nome
                 if (validarArquivo(declaracaoInput, editUserId)) { 
                     declaracaoName.textContent = e.target.files[0].name;
                     declaracaoName.style.color = '#333';
                 } else {
-                    // O validarArquivo já limpou o input. Aqui apenas limpa o display.
                     declaracaoName.textContent = 'Nenhum arq...';
                     declaracaoName.style.color = '#aaa';
                 }
@@ -372,12 +382,10 @@ function setupFormExtras(editUserId) {
     if (termoInput) {
         termoInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
-                // Valida o arquivo ANTES de exibir o nome
                 if (validarArquivo(termoInput, editUserId)) { 
                     termoName.textContent = e.target.files[0].name;
                     termoName.style.color = '#333';
                 } else {
-                    // O validarArquivo já limpou o input. Aqui apenas limpa o display.
                     termoName.textContent = 'Nenhum arq...';
                     termoName.style.color = '#aaa';
                 }
@@ -389,7 +397,7 @@ function setupFormExtras(editUserId) {
     }
 }
 
-// FUNÇÃO INICIAL (MANTIDA)
+// FUNÇÃO INICIAL
 // ----------------------------------------------------------------------
 function initUsuarioForm() {
     const editUserId = sessionStorage.getItem('editUserId');
@@ -403,8 +411,8 @@ function initUsuarioForm() {
             loadUserDataForEdit(editUserId);
         } else {
             // Se for cadastro, garante que o campo senha esteja visível
-             const groupSenha = document.getElementById('group-senha');
-             if (groupSenha) groupSenha.style.display = 'block';
+            const groupSenha = document.getElementById('group-senha');
+            if (groupSenha) groupSenha.style.display = 'block';
         }
     } else {
         console.error('O formulário de cadastro não foi encontrado no DOM.');
