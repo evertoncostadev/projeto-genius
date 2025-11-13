@@ -1,11 +1,20 @@
-// frontend/dashboard/home.js
+// frontend/dashboard/home.js (Corrigido para o Deploy)
 
 async function carregarDashboard() {
-    const token = localStorage.getItem('token');
-    const API_URL = 'http://localhost:3000';
+    // 1. CORREÇÃO: Usar o nome correto da chave do token
+    const token = localStorage.getItem('genius_token'); 
+    
+    // 2. CORREÇÃO: Usar a variável global API_BASE_URL (carregada via global_config.js)
+    if (typeof API_BASE_URL === 'undefined') {
+        console.error('Erro de Configuração: API_BASE_URL não está definida.');
+        return;
+    }
+    const API_URL = API_BASE_URL; // Usa a URL do Render
 
     if (!token) {
-        console.error('Erro de autenticação: Token não encontrado.');
+        console.error('Erro de autenticação: Token não encontrado. Redirecionando...');
+        // Redirecionamento de segurança caso o roteador falhe
+        window.location.href = '../login/login.html'; 
         return;
     }
 
@@ -23,6 +32,10 @@ async function carregarDashboard() {
 
         if (!estatisticasRes.ok) {
             console.error(`Falha ao buscar estatísticas: ${estatisticasRes.status}`);
+            // Se for 401 ou 403, forçar logout/login
+            if (estatisticasRes.status === 401 || estatisticasRes.status === 403) {
+                 window.location.href = '../login/login.html'; 
+            }
             return;
         }
         if (!atividadeRes.ok) {
@@ -47,14 +60,16 @@ function atualizarCards(data) {
     const elDisponiveis = document.getElementById('count-disponiveis');
     const elEmprestados = document.getElementById('count-emprestados');
     const elDesativados = document.getElementById('count-desativados');
-
-    if (elDisponiveis) elDisponiveis.textContent = data.disponiveis;
-    if (elEmprestados) elEmprestados.textContent = data.emprestados;
-    if (elDesativados) elDesativados.textContent = data.desativados;
+    
+    // Sua lógica de preenchimento dos cards
+    if (elDisponiveis) elDisponiveis.textContent = data.disponiveis || 0;
+    if (elEmprestados) elEmprestados.textContent = data.emprestados || 0;
+    if (elDesativados) elDesativados.textContent = data.desativados || 0;
 }
 
 
 function renderizarGraficoPizza(data) {
+    // Código do gráfico de Pizza (Mantido sem alterações)
     const ctx = document.getElementById('pieChartStatus');
     if (!ctx) return;
 
@@ -63,6 +78,8 @@ function renderizarGraficoPizza(data) {
         chartStatus.destroy();
     }
 
+    // Nota: O gráfico de pizza está exibindo 4 categorias, incluindo "Total Cadastrados". 
+    // Certifique-se de que é essa a intenção visual, pois normalmente gráficos de pizza/rosca mostram partes de um todo (Disponíveis + Emprestados + Indisponíveis = Total).
     new Chart(ctx, {
         type: 'pie',
         data: {
@@ -117,6 +134,7 @@ function renderizarGraficoPizza(data) {
 
 
 function renderizarGraficoBarras(data) {
+    // Código do gráfico de Barras (Mantido sem alterações)
     const ctx = document.getElementById('barChartSemana');
     if (!ctx) return;
 
@@ -169,4 +187,5 @@ function renderizarGraficoBarras(data) {
     });
 }
 
+// 3. CORREÇÃO: Chamar a função principal após o script ser carregado.
 carregarDashboard();

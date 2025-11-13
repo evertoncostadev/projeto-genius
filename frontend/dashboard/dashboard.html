@@ -6,7 +6,7 @@
     <title>Dashboard - GENIUS</title>
     <link rel="stylesheet" href="dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
+    </head>
 <body>
 
     <div class="dashboard-container">
@@ -16,6 +16,11 @@
                 <h3><i class="fas fa-globe"></i> GENIUS</h3>
             </div>
             
+            <div class="user-info">
+                <p id="userWelcome">Carregando...</p> 
+                <button id="logoutButton" class="btn-logout">Sair <i class="fas fa-sign-out-alt"></i></button>
+            </div>
+            
             <ul class="sidebar-menu">
                 <li>
                     <a href="#home">
@@ -23,7 +28,6 @@
                         <span>Home</span>
                     </a>
                 </li>
-                
                 <li class="has-submenu">
                     <a href="#" class="submenu-toggle">
                         <i class="fas fa-users"></i>
@@ -76,6 +80,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 
-    <script src="/dashboard/dashboard.js"></script>
+    <script src="../global_config.js"></script> 
+    <script src="dashboard.js"></script>
 </body>
 </html>
