@@ -1,11 +1,15 @@
-// Em: frontend/notebooks/cadastrar-notebook.js
-// [VERSÃO ATUALIZADA COM TOKEN, MODAIS E FEEDBACK DE LOADING]
+// EM: frontend/notebooks/cadastrar-notebook.js
+// [VERSÃO ATUALIZADA COM VALIDAÇÃO E CORREÇÕES]
+
+// Função auxiliar para alertas (usa showCustomAlert se disponível, senão usa alert)
+const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
 
 function initNotebookForm() {
     const editNotebookId = sessionStorage.getItem('editNotebookId');
     const form = document.getElementById('form-cadastrar-notebook');
 
     if (form) {
+        setupFormExtras(); // Adiciona validações e limites
         setupNotebookSubmit(form, editNotebookId); 
         
         if (editNotebookId) {
@@ -16,9 +20,28 @@ function initNotebookForm() {
     }
 }
 
+// NOVO: Função para configurar validações e limites
+function setupFormExtras() {
+    const anoAquisicaoInput = document.getElementById('ano_aquisicao');
+    if (anoAquisicaoInput) {
+        // Define o ano máximo como o ano atual
+        const currentYear = new Date().getFullYear();
+        anoAquisicaoInput.max = currentYear;
+
+        // Garante que o input só aceite números inteiros de 4 dígitos (ano)
+        anoAquisicaoInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) {
+                value = value.substring(0, 4);
+            }
+            e.target.value = value;
+        });
+    }
+}
+
+
 async function loadNotebookDataForEdit(notebookId) {
     const token = localStorage.getItem('token');
-    const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
 
     if (!token) {
         showAlert('Erro de Autenticação', 'Sua sessão expirou. Faça login novamente.', 'error');
@@ -34,14 +57,18 @@ async function loadNotebookDataForEdit(notebookId) {
 
         const notebook = await response.json();
 
+        // Preenche os campos
         document.getElementById('tombamento').value = notebook.tombamento;
         document.getElementById('numero_serie').value = notebook.numero_serie;
         document.getElementById('marca').value = notebook.marca;
         document.getElementById('modelo').value = notebook.modelo;
         document.getElementById('ano_aquisicao').value = notebook.ano_aquisicao;
 
-        document.querySelector('.form-wrapper-notebook h2').textContent = 'Editar Notebook';
-        document.querySelector('.btn-submit-notebook').textContent = 'Salvar Alterações';
+        // Atualiza a interface para Edição
+        const titleElement = document.querySelector('.form-wrapper-notebook h2');
+        const submitButton = document.querySelector('.btn-submit-notebook');
+        if (titleElement) titleElement.textContent = 'Editar Notebook';
+        if (submitButton) submitButton.textContent = 'Salvar Alterações';
 
     } catch (error) {
         console.error(error);
@@ -54,7 +81,6 @@ function setupNotebookSubmit(form, editNotebookId) {
         e.preventDefault();
 
         const token = localStorage.getItem('token');
-        const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
 
         if (!token) {
             showAlert('Erro de Autenticação', 'Sua sessão expirou. Faça login novamente.', 'error');
@@ -64,9 +90,22 @@ function setupNotebookSubmit(form, editNotebookId) {
         const formData = new FormData(form);
         const dados = Object.fromEntries(formData.entries());
 
-        console.log('Enviando notebook:', dados);
-        
+        // VALIDAÇÃO DE DADOS 
+        const anoAquisicao = parseInt(dados.ano_aquisicao);
+        const currentYear = new Date().getFullYear();
+        if (isNaN(anoAquisicao) || anoAquisicao < 2010 || anoAquisicao > currentYear) {
+            showAlert('Erro de Validação', `O Ano de Aquisição deve ser um ano válido entre 2010 e ${currentYear}.`, 'error');
+            return;
+        }
+
+
+        // O seletor usa a classe CORRIGIDA no HTML
         const submitButton = form.querySelector('.btn-submit-notebook');
+        if (!submitButton) {
+            console.error('Botão de submit não encontrado.');
+            return;
+        }
+        
         submitButton.disabled = true;
         submitButton.textContent = 'Salvando...';
 
@@ -83,6 +122,7 @@ function setupNotebookSubmit(form, editNotebookId) {
             response = await fetch(url, {
                 method: method,
                 headers: {
+                    // JSON.stringify exige o header 'Content-Type': 'application/json'
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },

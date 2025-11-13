@@ -1,216 +1,87 @@
-/* Em: frontend/notebooks/buscar-notebook.css */
+/* Em: frontend/notebooks/cadastrar-notebook.css */
 
-/* --- Barra de Filtros --- */
-.filter-bar {
+.form-wrapper-notebook {
     width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 20px;
-    background-color: var(--secondary-color);
-    border-radius: var(--card-radius);
-    border: 1px solid #ccc;
+    max-width: 800px; 
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.form-wrapper-notebook h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-color);
     margin-bottom: 30px;
 }
-.filter-group {
+
+.form-grid-notebook {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 25px;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: var(--card-radius);
+    border: 1px solid #ccc;
+    margin-bottom: 25px;
+}
+
+.input-group {
     display: flex;
     flex-direction: column;
-    flex: 1;
-    min-width: 150px;
-}
-.filter-group label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #555;
-    margin-bottom: 5px;
-}
-.filter-group input[type="text"],
-.filter-group select {
     width: 100%;
-    padding: 10px 12px;
+}
+.input-group label {
     font-size: 0.9rem;
+    font-weight: 500; 
+    color: #333;
+    margin-bottom: 6px;
+}
+.input-group input[type="text"],
+.input-group input[type="number"],
+.input-group select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 0.95rem;
     font-family: 'Poppins', sans-serif;
-    border: 1px solid #ccc;
+    border: 1px solid #b0b0b0; 
+    background-color: #ffffff;
     border-radius: 8px;
-    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-.filter-group input:focus,
-.filter-group select:focus {
+.input-group select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%232c3a4b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+}
+.input-group input:focus,
+.input-group select:focus {
     outline: none;
-    border-color: var(--primary-color);
-    background-color: #fff;
+    border-color: var(--primary-color); 
+    box-shadow: 0 0 0 3px rgba(44, 58, 75, 0.1);
 }
-.btn-buscar {
-    padding: 0 18px;
-    font-size: 1.1rem;
+
+.form-actions-notebook {
+    text-align: right;
+}
+.btn-submit-notebook {
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
     color: #ffffff;
     background-color: var(--primary-color);
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    align-self: flex-end;
-    min-height: 40px;
 }
-
-/* --- Lista de Notebooks --- */
-.notebook-list-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-
-.notebook-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 25px;
-
-    /* Cores pedidas */
-    background-color: #2D3748; 
-    color: #ffffff; 
-
-    border-radius: var(--card-radius);
-    border: 1px solid #2D3748;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
-}
-.notebook-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(45, 55, 72, 0.3);
-}
-.notebook-info {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.notebook-info .icon {
-    font-size: 1.8rem;
-    color: #ffffff; 
-    opacity: 0.9;
-}
-.notebook-info .tombamento {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #ffffff; 
-}
-
-/* --- Ações --- */
-.notebook-actions {
-    display: flex;
-    gap: 10px;
-}
-.action-btn {
-    background: none;
-    border: none;
-    font-size: 1.1rem;
-    color: #ffffff; 
-    opacity: 0.7;  
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
-}
-.action-btn:hover { 
-    background-color: rgba(255, 255, 255, 0.1); 
-    opacity: 1;
-}
-.action-btn.deactivate:hover { color: #f39c12; }
-.action-btn.edit:hover { color: #3498db; }
-.action-btn.delete:hover { color: #e74c3c; }
-
-.action-btn:disabled {
-    color: #ffffff;
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-.action-btn:disabled:hover {
-    background-color: transparent;
-    opacity: 0.3;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px; 
-    padding-top: 20px;
-    margin-bottom: 20px;
-}
-
-.pagination a {
-    text-decoration: none;
-    padding: 8px 12px;
-    border: none; 
-    border-radius: 6px;
-    color: var(--text-color); 
-    font-weight: 600;
-    background-color: transparent; 
-    transition: background-color 0.2s ease;
-}
-
-
-.pagination a:hover {
-    background-color: #f0f0f0;
-}
-
-.pagination a.active {
-    background-color: #e0eafc; 
-    color: #0056b3; 
-    font-weight: 700;
-}
-
-.pagination button {
-    text-decoration: none;
-    padding: 10px 20px; 
-    border: none; 
-    border-radius: 20px; 
-    color: #ffffff; 
-    font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-    background-color: #2D3748;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-
-.pagination button:hover:not(:disabled) {
+.btn-submit-notebook:hover {
     background-color: #1e2a38;
 }
 
-.pagination button:disabled { 
-    background-color: #ccc;
-    color: #888; 
-    cursor: not-allowed; 
-}
-
-.notebook-card.desativado {
-    background-color: #fff5f5; 
-    border-color: #f5c6cb;
-    opacity: 0.8;
-    color: #a0a0a0; /
-}
-.notebook-card.desativado .notebook-info .tombamento,
-.notebook-card.desativado .notebook-info .icon,
-.notebook-card.desativado .action-btn {
-    color: #a0a0a0;
-}
-
-.notebook-card.emprestado {
-    background-color: #f4f8ff; 
-    border-color: #b8cffc;
-    opacity: 0.9;
-    color: #333; 
-}
-.notebook-card.emprestado .notebook-info .icon {
-    color: #4a80ec;
-}
-.notebook-card.emprestado .notebook-info .tombamento {
-     color: #333;
-}
-.notebook-card.emprestado .action-btn {
-    color: #aaa;
-    opacity: 0.5;
+@media (max-width: 600px) {
+    .form-grid-notebook {
+        grid-template-columns: 1fr;
+    }
 }
