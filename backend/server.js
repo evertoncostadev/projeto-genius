@@ -28,10 +28,12 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 // Mapeia todas as subpastas para que os arquivos CSS/JS sejam encontrados
 app.use(express.static(path.join(__dirname, '../frontend/login')));
 app.use(express.static(path.join(__dirname, '../frontend/dashboard')));
-app.use(express.static(path.join(__dirname, '../frontend/usuarios')));
+
+// ⚡️ CORREÇÃO ESSENCIAL: Adicionar mapeamento para a pasta 'usuarios'
+app.use(express.static(path.join(__dirname, '../frontend/usuarios'))); 
+
 app.use(express.static(path.join(__dirname, '../frontend/notebooks')));
 app.use(express.static(path.join(__dirname, '../frontend/emprestimos')));
-
 const JWT_SECRET = 'sua_chave_secreta_muito_segura_123';
 
 const autenticarToken = (req, res, next) => {
