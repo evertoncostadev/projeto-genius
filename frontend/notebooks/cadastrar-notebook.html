@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="/notebooks/cadastrar-notebook.css">
+<script src="/notebooks/cadastrar-notebook.js"></script>
+
+<div class="form-wrapper-notebook">
+    <h2>Cadastrar Notebook</h2>
+
+    <form id="form-cadastrar-notebook">
+        <div class="form-grid-notebook">
+            
+            <div class="input-group">
+                <label for="tombamento">*Tombamento:</label>
+                <input type="text" id="tombamento" name="tombamento" placeholder="Ex: NTB-00123" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="numero_serie">*Número de série:</label>
+                <input type="text" id="numero_serie" name="numero_serie" placeholder="Ex: JHD83K9C" required>
+            </div>
+
+            <div class="input-group">
+                <label for="marca">*Marca:</label>
+                <select id="marca" name="marca" required>
+                    <option value="" disabled selected>Selecione a marca</option>
+                    <option value="Dell">Dell</option>
+                    <option value="Lenovo">Lenovo</option>
+                    <option value="HP">HP</option>
+                    <option value="Apple">Apple</option>
+                    <option value="Samsung">Samsung</option>
+                    <option value="Acer">Acer</option>
+                    <option value="Outra">Outra</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="modelo">*Modelo:</label>
+                <input type="text" id="modelo" name="modelo" placeholder="Ex: Inspiron 15 3000" required>
+            </div>
+
+            <div class="input-group">
+                <label for="ano_aquisicao">*Ano de Aquisição:</label>
+                <input type="number" id="ano_aquisicao" name="ano_aquisicao" placeholder="Ex: 2023" min="2010" max="2030" required>
+            </div>
+
+        </div>
+
+        <div class="form-actions-notebook">
+            <button type="submit" class="btn-submit-notebook">Cadastrar</button>
+        </div>
+    </form>
+</div>

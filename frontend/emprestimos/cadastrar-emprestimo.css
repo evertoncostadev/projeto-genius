@@ -1,0 +1,150 @@
+/* Em: frontend/emprestimos/cadastrar-emprestimo.css */
+
+.form-wrapper-emprestimo {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.form-wrapper-emprestimo h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 30px;
+}
+
+#form-cadastrar-emprestimo {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: var(--card-radius);
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1; 
+    min-width: 200px;
+}
+.input-group.full-width {
+    flex-basis: 100%;
+}
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 500; 
+    color: #333;
+    margin-bottom: 6px;
+}
+.input-group input[type="text"],
+.input-group input[type="date"],
+.input-group input[type="time"],
+.input-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid #b0b0b0; 
+    background-color: #ffffff;
+    border-radius: 8px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.input-group input:focus,
+.input-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color); 
+    box-shadow: 0 0 0 3px rgba(44, 58, 75, 0.1);
+}
+.input-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.searchable-select {
+    position: relative;
+}
+.searchable-select input[type="text"] {
+    background-color: #f9f9f9;
+}
+.search-results {
+    display: none; 
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+}
+.search-results.visible {
+    display: block;
+}
+.result-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.result-item:hover {
+    background-color: #f0f0f0;
+}
+.result-item small {
+    color: #777;
+    margin-left: 8px;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 20px;
+    padding-top: 10px;
+}
+.checkbox-group label {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0;
+}
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.form-actions {
+    text-align: right;
+    margin-top: 10px;
+}
+.btn-submit {
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn-submit:hover {
+    background-color: #1e2a38;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 25px;
+    }
+}

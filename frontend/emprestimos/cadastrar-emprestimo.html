@@ -1,0 +1,77 @@
+<link rel="stylesheet" href="/emprestimos/cadastrar-emprestimo.css">
+<script src="/emprestimos/cadastrar-emprestimo.js"></script>
+
+<div class="form-wrapper-emprestimo">
+    <h2>Cadastrar Empréstimo</h2>
+
+    <form id="form-cadastrar-emprestimo">
+        
+        <div class="form-row">
+            <div class="input-group">
+                <label for="search-usuario">*Usuário (Nome ou CPF):</label>
+                <div class="searchable-select">
+                    <input type="text" id="search-usuario" placeholder="Digite para buscar..." autocomplete="off">
+                    <div class="search-results" id="results-usuario"></div>
+                    <input type="hidden" id="usuarioId" name="usuarioId" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="search-notebook">*Notebook (Tombamento ou Modelo):</label>
+                <div class="searchable-select">
+                    <input type="text" id="search-notebook" placeholder="Digite para buscar..." autocomplete="off">
+                    <div class="search-results" id="results-notebook"></div>
+                    <input type="hidden" id="notebookId" name="notebookId" required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group">
+                <label for="dataEmprestimo">*Data de Empréstimo:</label>
+                <input type="date" id="dataEmprestimo" name="dataEmprestimo" required>
+            </div>
+            <div class="input-group">
+                <label for="horaEmprestimo">*Horário de Empréstimo:</label>
+                <input type="time" id="horaEmprestimo" name="horaEmprestimo" required>
+            </div>
+            <div class="input-group">
+                <label for="dataDevolucao">*Data de Devolução:</label>
+                <input type="date" id="dataDevolucao" name="dataDevolucao" required>
+            </div>
+            <div class="input-group">
+                <label for="horaDevolucao">*Horário de Devolução:</label>
+                <input type="time" id="horaDevolucao" name="horaDevolucao" required>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group full-width">
+                <label for="obs">Observações:</label>
+                <textarea id="obs" name="obs" rows="4" placeholder="Ex: Notebook com arranhão na tampa..."></textarea>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="input-group full-width">
+                <label>Acessórios:</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="acessorios" value="fonte"> Fonte
+                    </label>
+                    <label>
+                        <input type="checkbox" name="acessorios" value="cabo_forca"> Cabo de Força
+                    </label>
+                    <label>
+                        <input type="checkbox" name="acessorios" value="caixa"> Caixa
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit">Cadastrar Empréstimo</button>
+        </div>
+
+    </form>
+</div>

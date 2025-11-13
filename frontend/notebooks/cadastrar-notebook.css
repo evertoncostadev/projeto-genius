@@ -1,0 +1,87 @@
+/* Em: frontend/notebooks/cadastrar-notebook.css */
+
+.form-wrapper-notebook {
+    width: 100%;
+    max-width: 800px; 
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.form-wrapper-notebook h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 30px;
+}
+
+.form-grid-notebook {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 25px;
+    background-color: #fff;
+    padding: 30px;
+    border-radius: var(--card-radius);
+    border: 1px solid #ccc;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 500; 
+    color: #333;
+    margin-bottom: 6px;
+}
+.input-group input[type="text"],
+.input-group input[type="number"],
+.input-group select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid #b0b0b0; 
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.input-group select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%232c3a4b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+}
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: var(--primary-color); 
+    box-shadow: 0 0 0 3px rgba(44, 58, 75, 0.1);
+}
+
+.form-actions-notebook {
+    text-align: right;
+}
+.btn-submit-notebook {
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.btn-submit-notebook:hover {
+    background-color: #1e2a38;
+}
+
+@media (max-width: 600px) {
+    .form-grid-notebook {
+        grid-template-columns: 1fr;
+    }
+}

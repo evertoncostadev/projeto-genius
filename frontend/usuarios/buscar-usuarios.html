@@ -1,0 +1,45 @@
+<link rel="stylesheet" href="/usuarios/buscar-usuarios.css">
+<script src="/usuarios/usuarios.js"></script>
+<script src="/usuarios/buscar-usuarios.js"></script>
+
+<h1>Buscar Usuários</h1>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <label for="filtro-nome">Filtrar por nome:</label>
+        <input type="text" id="filtro-nome" placeholder="Digite o nome...">
+    </div>
+    
+    <div class="filter-group">
+        <label for="filtro-cpf">Filtrar por CPF:</label>
+        <input type="text" id="filtro-cpf" placeholder="Digite o CPF..." maxlength="14">
+    </div>
+
+    <div class="filter-group">
+        <label for="filtro-curso">Curso:</label>
+        <select id="filtro-curso">
+            <option value="">Todos</option>
+            <option value="ciencia_dados">Ciência de Dados</option>
+            <option value="ads">Análise e Desenv. de Sistemas</option>
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="filtro-periodo">Período:</label>
+        <select id="filtro-periodo">
+            <option value="">Todos</option>
+            <option value="1">1º</option>
+            <option value="2">2º</option>
+            <option value="3">3º</option>
+            <option value="4">4º</option>
+        </select>
+    </div>
+    
+    <button id="btn-buscar" class="btn-buscar"><i class="fas fa-search"></i></button>
+</div>
+
+<div class="user-list-container">
+    </div>
+
+<div class="pagination" id="pagination-container">
+    </div>

@@ -1,0 +1,33 @@
+<link rel="stylesheet" href="/emprestimos/buscar-emprestimos.css">
+<script src="/emprestimos/buscar-emprestimos.js"></script>
+
+<h1 id="titulo-pagina">Carregando...</h1>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <label for="filtro-usuario">Filtrar por Usuário (Nome ou CPF):</label>
+        <input type="text" id="filtro-usuario" placeholder="Digite o nome ou CPF...">
+    </div>
+    
+    <div class="filter-group">
+        <label for="filtro-notebook">Filtrar por Notebook (Tombamento):</label>
+        <input type="text" id="filtro-notebook" placeholder="Digite o tombamento...">
+    </div>
+    
+    <div class="filter-group">
+        <label for="filtro-status">Status:</label>
+        <select id="filtro-status">
+            <option value="todos">Todos</option>
+            <option value="em_dia">Em dia</option>
+            <option value="atrasados">Apenas Atrasados</option>
+        </select>
+    </div>
+    
+    <button id="btn-buscar-emprestimo" class="btn-buscar"><i class="fas fa-search"></i></button>
+</div>
+
+<div class="loan-list-container">
+    </div>
+
+<div class="pagination" id="pagination-container-emp">
+    </div>

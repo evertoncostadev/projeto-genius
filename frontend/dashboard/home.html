@@ -1,0 +1,49 @@
+<h1>Olá, Luiz. Seja bem-vindo!</h1>
+
+<div class="dashboard-legend">
+    <span class="legend-item">
+        <span class="color-box disponivel"></span> Disponíveis
+    </span>
+    <span class="legend-item">
+        <span class="color-box emprestado"></span> Emprestados
+    </span>
+    <span class="legend-item">
+        <span class="color-box indisponivel"></span> Indisponíveis
+    </span>
+</div>
+
+<div class="cards-container">
+    <div class="info-card">
+        <div class="card-header">
+            <h2 id="count-disponiveis">0</h2>
+            <span class="card-icon disponivel"></span>
+        </div>
+        <p>Disponíveis</p>
+    </div>
+    <div class="info-card">
+        <div class="card-header">
+            <h2 id="count-emprestados">0</h2>
+            <span class="card-icon emprestado"></span>
+        </div>
+        <p>Emprestados</p>
+    </div>
+    <div class="info-card">
+        <div class="card-header">
+            <h2 id="count-desativados">0</h2>
+            <span class="card-icon indisponivel"></span>
+        </div>
+        <p>Indisponíveis</p>
+    </div>
+</div>
+
+<div class="charts-container">
+    <div class="chart-box">
+        <canvas id="barChartSemana"></canvas>
+    </div>
+    
+    <div class="chart-box chart-box-donut">
+        <canvas id="pieChartStatus"></canvas>
+    </div>
+</div>
+
+<script src="/dashboard/home.js"></script>

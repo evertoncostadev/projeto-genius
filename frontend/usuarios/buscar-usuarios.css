@@ -1,0 +1,201 @@
+/* Em: frontend/usuarios/buscar-usuarios.css */
+
+/* --- Barra de Filtros --- */
+.filter-bar {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 20px;
+    background-color: var(--secondary-color);
+    border-radius: var(--card-radius);
+    border: 1px solid #ccc;
+    margin-bottom: 30px;
+}
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 150px;
+}
+.filter-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+}
+.filter-group input[type="text"],
+.filter-group select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+.filter-group input:focus,
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background-color: #fff;
+}
+.btn-buscar {
+    padding: 0 18px;
+    font-size: 1.1rem;
+    color: #ffffff;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    align-self: flex-end;
+    min-height: 40px;
+}
+
+/* --- Lista de Usuários --- */
+.user-list-container {
+    display: grid;
+    grid-template-columns: 1fr; 
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.user-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    
+    /* Cores pedidas */
+    background-color: #2D3748; 
+    color: #ffffff; 
+
+    border-radius: var(--card-radius);
+    border: 1px solid #2D3748;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+}
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(45, 55, 72, 0.3);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-info .avatar {
+    font-size: 1.8rem;
+    color: #ffffff; 
+    opacity: 0.9;
+}
+
+.user-info .user-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff; 
+}
+
+/* --- Ações --- */
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+.action-btn {
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #ffffff; 
+    opacity: 0.7;  
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+}
+.action-btn:hover { 
+    background-color: rgba(255, 255, 255, 0.1); 
+    opacity: 1;
+}
+.action-btn.deactivate:hover { color: #f39c12; }
+.action-btn.edit:hover { color: #3498db; }
+.action-btn.delete:hover { color: #e74c3c; }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px; 
+    padding-top: 20px;
+    margin-bottom: 20px; 
+}
+
+.pagination a {
+    text-decoration: none;
+    padding: 8px 12px;
+    border: none; 
+    border-radius: 6px;
+    color: var(--text-color);
+    font-weight: 600;
+    background-color: transparent; 
+    transition: background-color 0.2s ease;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0;
+}
+
+.pagination a.active {
+    background-color: #e0eafc;
+    color: #0056b3; 
+    font-weight: 700;
+}
+
+.pagination button {
+    text-decoration: none;
+    padding: 10px 20px; 
+    border: none; 
+    border-radius: 20px;
+    color: #ffffff; 
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    background-color: #2D3748; 
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+
+.pagination button:hover:not(:disabled) {
+    background-color: #1e2a38; 
+}
+
+.pagination button:disabled { 
+    background-color: #ccc;
+    color: #888; 
+    cursor: not-allowed; 
+}
+
+
+.user-card.desativado {
+    background-color: #fff5f5; 
+    border-color: #f5c6cb;     
+    opacity: 0.8;
+    transition: none;
+    transform: none;
+    color: #a0a0a0;
+}
+.user-card.desativado:hover {
+    border-color: #f5c6cb;
+    opacity: 0.8;
+    box-shadow: none;
+}
+.user-card.desativado .user-info .user-name,
+.user-card.desativado .user-info .avatar,
+.user-card.desativado .action-btn {
+     color: #a0a0a0;
+}
+.user-card.desativado .action-btn:hover {
+    background-color: #f0f0f0;
+}

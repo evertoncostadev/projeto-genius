@@ -1,0 +1,259 @@
+/* Em: frontend/emprestimos/buscar-emprestimos.css */
+
+@import url('/usuarios/buscar-usuarios.css');
+
+.loan-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+    padding-top: 15px; 
+    margin-bottom: 30px;
+}
+
+
+.loan-list-container.grid-view-encerrado {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 20px;
+}
+
+@media (max-width: 1024px) {
+    .loan-list-container.grid-view-encerrado {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.loan-card {
+    background-color: #2D3748; 
+    color: white; 
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; 
+    gap: 20px;
+    border: 1px solid #2D3748; 
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease, opacity 0.3s ease;
+}
+
+.loan-card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 6px 14px rgba(45, 55, 72, 0.3);
+}
+
+.loan-info {
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    gap: 10px; 
+}
+
+.loan-info .user-info,
+.loan-info .notebook-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.loan-info .user-info .fas,
+.loan-info .notebook-info .fas {
+    color: #90CAF9; 
+    width: 20px; 
+    text-align: center;
+}
+
+.loan-info .dates-info {
+    font-size: 0.9rem;
+    color: #CFD8DC; 
+    flex-wrap: wrap; 
+    padding-left: 30px; 
+}
+
+.loan-info .dates-info strong {
+    color: white; 
+}
+
+.loan-info .obs-info {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    padding-top: 10px;
+    color: #CFD8DC; 
+    padding-left: 30px; 
+}
+
+.loan-info .obs-info strong {
+    color: white; 
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 10px;
+    white-space: nowrap; 
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.status-badge.atrasado {
+    background-color: #e74c3c; 
+}
+
+.status-badge.em-dia {
+    background-color: #2ecc71; 
+}
+
+/* --- Ações --- */
+.loan-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: white; 
+    font-size: 1.1rem; 
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    opacity: 0.7;
+}
+.action-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.action-btn.encerrar:hover { 
+    color: #2ecc71; 
+}
+.action-btn.delete:hover {
+    color: #e74c3c; 
+}
+
+.loan-card.atrasado-card {
+    background-color: #5c2f34; 
+    border: 1px solid #e74c3c;
+}
+.loan-card.atrasado-card:hover {
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+
+.loan-card.encerrado:hover {
+    transform: none; 
+    box-shadow: none; 
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.modal-content {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.modal-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+.modal-content .modal-info {
+    font-size: 0.95rem;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+.modal-content .modal-info strong {
+    color: var(--text-color);
+}
+.modal-content .modal-check-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.modal-content .modal-check-group label {
+    font-size: 1rem;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+.modal-content .modal-check-group input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+.modal-content .modal-obs-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 25px;
+}
+.modal-content .modal-obs-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+}
+.modal-content .modal-obs-group textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    resize: vertical;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+.modal-btn {
+    padding: 10px 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.modal-btn.cancel {
+    background-color: #f0f0f0;
+    color: #555;
+}
+.modal-btn.cancel:hover {
+    background-color: #e0e0e0;
+}
+.modal-btn.confirm {
+    background-color: var(--color-disponivel); 
+    color: #ffffff;
+}
+.modal-btn.confirm:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

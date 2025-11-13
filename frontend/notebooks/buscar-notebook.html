@@ -1,0 +1,43 @@
+<link rel="stylesheet" href="/notebooks/buscar-notebook.css">
+<script src="/notebooks/buscar-notebook.js"></script>
+
+<h1>Buscar Notebook</h1>
+
+<div class="filter-bar">
+    <div class="filter-group">
+        <label for="filtro-tombamento">Tombamento:</label>
+        <input type="text" id="filtro-tombamento" placeholder="Digite o tombamento...">
+    </div>
+    
+    <div class="filter-group">
+        <label for="filtro-serie">Número de Série:</label>
+        <input type="text" id="filtro-serie" placeholder="Digite o N/S...">
+    </div>
+
+    <div class="filter-group">
+        <label for="filtro-marca">Marca:</label>
+        <select id="filtro-marca">
+            <option value="">Todas</option>
+            <option value="Dell">Dell</option>
+            <option value="Lenovo">Lenovo</option>
+            <option value="HP">HP</option>
+            <option value="Apple">Apple</option>
+            <option value="Samsung">Samsung</option>
+            <option value="Acer">Acer</option>
+            <option value="Outra">Outra</option>
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="filtro-modelo">Modelo:</label>
+        <input type="text" id="filtro-modelo" placeholder="Digite o modelo...">
+    </div>
+    
+    <button id="btn-buscar-notebook" class="btn-buscar"><i class="fas fa-search"></i></button>
+</div>
+
+<div class="notebook-list-container">
+    </div>
+    
+<div class="pagination" id="pagination-container-note">
+    </div>
