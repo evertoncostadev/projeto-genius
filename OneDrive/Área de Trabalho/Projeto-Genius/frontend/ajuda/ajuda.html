@@ -1,0 +1,126 @@
+<link rel="stylesheet" href="/ajuda/ajuda.css">
+
+<div class="ajuda-wrapper">
+    <h2><i class="fas fa-question-circle"></i> Página de Ajuda & Tutorial</h2>
+    <p>Encontre abaixo as respostas para as dúvidas mais comuns sobre o sistema.</p>
+
+    <div class="accordion">
+
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <i class="fas fa-home"></i>
+                <span>Painel Home (Visão Geral)</span>
+                <i class="fas fa-chevron-down arrow"></i>
+            </button>
+            <div class="accordion-content">
+                <p>O Painel Home é sua tela inicial e fornece uma visão "ao vivo" do status dos seus notebooks.</p>
+                <ul>
+                    <li><b>Cards de Status (Disponíveis, Emprestados, Indisponíveis):</b> Mostram a contagem em tempo real de quantos notebooks estão em cada estado.</li>
+                    <li><b>Gráfico de Barras:</b> Mostra quantos empréstimos foram realizados em cada dia da semana (Segunda a Sexta).</li>
+                    <li><b>Gráfico de Pizza:</b> Mostra a proporção de notebooks em cada status, incluindo o total cadastrado.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <i class="fas fa-users"></i>
+                <span>Módulo de Usuários</span>
+                <i class="fas fa-chevron-down arrow"></i>
+            </button>
+            <div class="accordion-content">
+                <p>Este módulo gerencia quem pode pegar notebooks emprestados.</p>
+                
+                <h3>1. Cadastrar Novo Usuário</h3>
+                <ol>
+                    <li>Vá em <strong>Usuários > Cadastrar Novo</strong>.</li>
+                    <li>Preencha todas as informações pessoais, acadêmicas e de contato. Campos com (*) são obrigatórios.</li>
+                    <li>O CPF e o Telefone possuem máscaras automáticas (ex: `XXX.XXX.XXX-XX`).</li>
+                    <li>O CEP busca o endereço automaticamente.</li>
+                    <li>Anexe os dois documentos obrigatórios (Declaração e Termo).</li>
+                </ol>
+                
+                <h3>2. Buscar e Gerenciar Usuários</h3>
+                <ol>
+                    <li>Vá em <strong>Usuários > Buscar Usuário</strong>.</li>
+                    <li>Use os filtros de Nome, CPF, Curso ou Período para encontrar quem você procura.</li>
+                    <li><b>Ícone de Lápis:</b> Permite editar as informações de um usuário, incluindo a substituição dos anexos.</li>
+                    <li><b>Ícone de Olho (Ativar/Desativar):</b> Desativa um usuário, impedindo que ele apareça na lista de empréstimos.</li>
+                    <li><b>Ícone de Lixeira:</b> Exclui um usuário permanentemente.</li>
+                    <li><b>IMPORTANTE:</b> O sistema não permite Desativar ou Excluir um usuário que tenha um empréstimo ativo.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <i class="fas fa-laptop"></i>
+                <span>Módulo de Notebooks</span>
+                <i class="fas fa-chevron-down arrow"></i>
+            </button>
+            <div class="accordion-content">
+                <p>Este módulo gerencia os seus ativos (os notebooks).</p>
+                
+                <h3>1. Cadastrar Novo Notebook</h3>
+                <ol>
+                    <li>Vá em <strong>Notebooks > Cadastrar Novo</strong>.</li>
+                    <li>Preencha todos os campos.</li>
+                    <li>O sistema irá validar se o <strong>Nº de Tombamento</strong> ou o <strong>Nº de Série</strong> já existem, para evitar duplicatas.</li>
+                </ol>
+                
+                <h3>2. Buscar e Gerenciar Notebooks</h3>
+                <ol>
+                    <li>Vá em <strong>Notebooks > Buscar Notebook</strong>.</li>
+                    <li>Use os filtros para encontrar um notebook específico.</li>
+                    <li><b>Status:</b> Os cards mostram o status atual (Disponível, Emprestado ou Desativado).</li>
+                    <li><b>Ícone de Lápis (Editar):</b> Permite alterar os dados do notebook.</li>
+                    <li><b>Ícone de Olho (Ativar/Desativar):</b> Muda o status entre "Disponível" e "Desativado".</li>
+                    <li><b>Ícone de Lixeira (Excluir):</b> Exclui o notebook permanentemente.</li>
+                    <li><b>IMPORTANTE:</b> Um notebook com status "Emprestado" (ícone de cadeado) não pode ser editado, desativado ou excluído até que seja devolvido.</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="accordion-item">
+            <button class="accordion-header">
+                <i class="fas fa-exchange-alt"></i>
+                <span>Módulo de Empréstimos</span>
+                <i class="fas fa-chevron-down arrow"></i>
+            </button>
+            <div class="accordion-content">
+                <p>Este é o módulo principal para o dia-a-dia, onde você registra as saídas e devoluções.</p>
+                
+                <h3>1. Cadastrar Novo Empréstimo</h3>
+                <ol>
+                    <li>Vá em <strong>Empréstimos > Cadastrar Novo</strong>.</li>
+                    <li>A data e hora de retirada/devolução são preenchidas automaticamente (você pode alterar se precisar).</li>
+                    <li>No campo "Buscar Usuário", comece a digitar o nome ou CPF. Apenas usuários <strong>ativos</strong> e que <strong>não possuem</strong> outro empréstimo aparecerão.</li>
+                    <li>No campo "Buscar Notebook", comece a digitar o Tombamento ou Modelo. Apenas notebooks <strong>disponíveis</strong> aparecerão.</li>
+                    <li>Selecione os acessórios (ex: Fonte) e adicione observações, se necessário.</li>
+                </ol>
+                
+                <h3>2. Empréstimos Ativos</h3>
+                <ol>
+                    <li>Esta tela mostra todos os notebooks que estão fora da instituição.</li>
+                    <li>Empréstimos que passaram da data/hora de devolução prevista ficam marcados em <strong>vermelho (Atrasado)</strong>.</li>
+                    <li><strong>Ícone de Check (✔) - Dar Baixa:</strong> Inicia o processo de devolução.</li>
+                    <li><strong>Ícone de Lixeira:</strong> Exclui o registro de empréstimo. (Use com cuidado! Isso força o notebook a ficar "Disponível" sem registrar uma devolução).</li>
+                </ol>
+
+                <h3>3. Processo de Devolução (Dar Baixa)</h3>
+                <ol>
+                    <li>Ao clicar no <strong>Ícone de Check (✔)</strong>, um modal de confirmação aparece.</li>
+                    <li>Você deve verificar se o notebook e os acessórios foram devolvidos em boas condições.</li>
+                    <li><strong>Se o notebook estiver danificado</strong>, desmarque a caixa "Notebook devolvido em boas condições". Ao fazer isso, o campo "Observações" se torna <strong>obrigatório</strong> para você descrever o defeito.</li>
+                    <li>Clique em "Confirmar Devolução". O empréstimo sairá da lista de "Ativos" e irá para "Encerrados".</li>
+                </ol>
+
+                <h3>4. Empréstimos Encerrados</h3>
+                <p>Esta tela é um histórico de todas as devoluções, mostrando quem pegou, quando pegou e quando devolveu, incluindo todas as observações de retirada e devolução (ex: se foi devolvido com defeito).</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="/ajuda/ajuda.js"></script>

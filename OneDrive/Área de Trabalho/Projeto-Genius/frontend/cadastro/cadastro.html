@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Projeto GENIUS</title>
+    <link rel="stylesheet" href="cadastro.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+    <div class="wizard-wrapper">
+        
+        <div class="wizard-header">
+            <img src="../assets/logo-genius.png" alt="GENIUS" class="logo" onerror="this.style.display='none'">
+            <div class="progress-bar">
+                <div class="progress-segment active" id="prog-1"></div>
+                <div class="progress-segment" id="prog-2"></div>
+                <div class="progress-segment" id="prog-3"></div>
+                <div class="progress-segment" id="prog-4"></div>
+            </div>
+        </div>
+
+        <div class="wizard-body">
+            <form id="form-cadastro-publico">
+                
+                <div class="wizard-step active" id="step-1">
+                    <h3 class="step-title"><i class="far fa-user"></i> IDENTIFICAÇÃO E ACESSO</h3>
+                    
+                    <div class="foto-upload-container">
+                        <div class="foto-preview" id="foto-preview">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="foto-instrucoes">
+                            <label for="foto" class="btn-upload">Escolher Foto *</label>
+                            <input type="file" id="foto" name="foto" accept="image/png, image/jpeg, image/jpg" required hidden>
+                            <small>Apenas JPG/PNG (Máx 5MB)</small>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>NOME COMPLETO (SEM NÚMEROS) *</label>
+                            <input type="text" id="nome" name="nome" placeholder="Ex: Maria da Silva" maxlength="100" required>
+                        </div>
+                        <div class="input-group">
+                            <label>CPF *</label>
+                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" maxlength="14" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>DATA DE NASCIMENTO *</label>
+                            <input type="date" id="data_nascimento" name="data_nascimento" required>
+                        </div>
+                        <div class="input-group">
+                            <label>SEXO *</label>
+                            <select id="sexo" required>
+                                <option value="">Selecione...</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="feminino">Feminino</option>
+                                <option value="outro">Outro</option>
+                                <option value="nao_informar">Prefiro não informar</option>
+                            </select>
+                            <input type="text" id="sexo_especifico" placeholder="Especifique..." maxlength="50" style="display: none; margin-top: 5px;">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>CRIAR SENHA *</label>
+                            <input type="password" id="senha" name="senha" placeholder="Mín. 6 caracteres" minlength="6" required>
+                        </div>
+                        <div class="input-group">
+                            <label>CONFIRMAR SENHA *</label>
+                            <input type="password" id="confirma_senha" name="confirma_senha" placeholder="Repita a senha" minlength="6" required>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-wizard-next full-width" onclick="nextStep(1)">PRÓXIMO PASSO</button>
+                    
+                    <div style="text-align: center; margin-top: 15px;">
+                        <a href="../portal/portal.html" style="color: var(--color-text-label); font-size: 0.9rem; text-decoration: none;"><i class="fas fa-arrow-left"></i> Voltar ao início</a>
+                    </div>
+                </div>
+
+                <div class="wizard-step" id="step-2">
+                    <h3 class="step-title"><i class="fas fa-map-marker-alt"></i> CONTATO E ENDEREÇO</h3>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>E-MAIL *</label>
+                            <input type="email" id="email" name="email" placeholder="Ex: maria@gmail.com" maxlength="100" required>
+                        </div>
+                        <div class="input-group">
+                            <label>WHATSAPP *</label>
+                            <input type="text" id="telefone" name="telefone" placeholder="Ex: (83) 99999-9999" maxlength="15" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>CEP *</label>
+                            <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9" required>
+                        </div>
+                        <div class="input-group">
+                            <label>BAIRRO *</label>
+                            <input type="text" id="bairro" name="bairro" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group" style="grid-column: span 2;">
+                            <label>RUA *</label>
+                            <input type="text" id="rua" name="rua" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>NÚMERO *</label>
+                            <input type="text" id="numero_end" name="numero_end" required>
+                        </div>
+                        <div class="input-group">
+                            <label>COMPLEMENTO</label>
+                            <input type="text" id="complemento" name="complemento">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>CIDADE *</label>
+                            <input type="text" id="cidade" name="cidade" required>
+                        </div>
+                        <div class="input-group">
+                            <label>UF *</label>
+                            <input type="text" id="uf" name="uf" required maxlength="2" style="text-transform: uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="btn-wizard-prev" onclick="prevStep(2)">VOLTAR</button>
+                        <button type="button" class="btn-wizard-next" onclick="nextStep(2)">PRÓXIMO PASSO</button>
+                    </div>
+                </div>
+
+                <div class="wizard-step" id="step-3">
+                    <h3 class="step-title"><i class="fas fa-graduation-cap"></i> VÍNCULO ACADÊMICO</h3>
+                    
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>MATRÍCULA (APENAS NÚMEROS) *</label>
+                            <input type="text" id="matricula" name="matricula" placeholder="Ex: 2026123456" maxlength="20" required>
+                        </div>
+                        <div class="input-group">
+                            <label>CURSO *</label>
+                            <select id="curso" name="curso" required>
+                                <option value="">Selecione o curso...</option>
+                                <option value="ads">Análise e Desenvolvimento de Sistemas</option>
+                                <option value="ciencia_dados">Ciência de Dados</option>
+                                <option value="redes">Redes de Computadores</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>PERÍODO *</label>
+                            <select id="periodo" name="periodo" required>
+                                <option value="">Selecione...</option>
+                                <option value="1">1º Período</option>
+                                <option value="2">2º Período</option>
+                                <option value="3">3º Período</option>
+                                <option value="4">4º Período</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>TURNO *</label>
+                            <select id="turno" name="turno" required>
+                                <option value="">Selecione...</option>
+                                <option value="matutino_noturno">Matutino - Noturno</option>
+                                <option value="vespertino_noturno">Vespertino - Noturno</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-top: 15px; padding: 20px; border: 1px dashed var(--color-border); border-radius: 8px; background: #f8fafc;">
+                        <label style="color: var(--color-navy); font-size: 0.85rem;">TERMO DE RESPONSABILIDADE *</label>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
+                            <input type="file" id="termo" name="termo" accept=".pdf, image/png, image/jpeg" required style="flex: 1; background: #fff;">
+                            <button type="button" id="btn-abrir-termo-digital" class="btn-digital">
+                                <i class="fas fa-signature"></i> Assinar Digitalmente
+                            </button>
+                        </div>
+                        <small style="color: var(--color-text-label); margin-top: 10px; display: block;" id="termo-status-hint">Anexe o arquivo ou assine diretamente no sistema.</small>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="btn-wizard-prev" onclick="prevStep(3)">VOLTAR</button>
+                        <button type="button" class="btn-wizard-next" onclick="nextStep(3)">PRÓXIMO PASSO</button>
+                    </div>
+                </div>
+
+                <div class="wizard-step" id="step-4">
+                    <h3 class="step-title"><i class="fas fa-check-double"></i> FINALIZAÇÃO</h3>
+                    
+                    <div class="termos-lgpd-box">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="aceite_lgpd" required>
+                            <label for="aceite_lgpd">
+                                <strong>TERMO DE CONSENTIMENTO (LGPD):</strong> Declaro que as informações fornecidas são verdadeiras. Autorizo a coleta, armazenamento e tratamento dos meus dados pessoais e sensíveis (incluindo fotos e documentos) exclusivamente para fins de análise e gestão do Projeto GENIUS, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="wizard-actions">
+                        <button type="button" class="btn-wizard-prev" onclick="prevStep(4)">VOLTAR</button>
+                        <button type="submit" id="btn-enviar-cadastro" class="btn-wizard-submit">CONCLUIR CADASTRO</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-sucesso" class="modal-backdrop" style="display: none;">
+        <div class="modal-success-box">
+            <div class="success-icon"><i class="fas fa-check"></i></div>
+            <h2>Cadastro Enviado!</h2>
+            <p>Seus dados e documentos foram enviados com sucesso para a coordenação.</p>
+            <p class="highlight-text">Sua solicitação está <strong>Em Análise</strong>.</p>
+            <button id="btn-fechar-sucesso" class="btn-fechar-modal">Entendi, Voltar ao Início</button>
+        </div>
+    </div>
+
+    <div id="modal-assinatura" class="modal-backdrop" style="display: none;">
+        <div class="modal-assinatura-box">
+            <div class="modal-assinatura-header">
+                <h2><i class="fas fa-file-contract"></i> Termo de Compromisso</h2>
+                <button id="btn-fechar-assinatura">&times;</button>
+            </div>
+            <div id="documento-para-pdf" class="documento-pdf">
+                <h3>Termo de Responsabilidade e Compromisso</h3>
+                <p>Eu, <strong id="t-nome">__________</strong>, portador(a) do CPF nº <strong id="t-cpf">__________</strong>, residente no endereço <strong id="t-end">__________</strong>, aluno(a) regularmente matriculado(a) no curso de <strong id="t-curso">__________</strong> (Matrícula: <strong id="t-mat">__________</strong>), declaro para os devidos fins que assumo total e irrestrita responsabilidade pela guarda, zelo e uso do equipamento (Notebook e acessórios) que me for cedido a título de empréstimo pelo Projeto GENIUS.</p>
+                <p>Declaro estar ciente de que o equipamento deverá ser utilizado estritamente para fins acadêmicos, sendo vedada a cessão a terceiros, e me comprometo a devolvê-lo nas mesmas condições em que o recebi, respeitando rigorosamente os prazos estabelecidos pelo sistema.</p>
+                <p>Em caso de dano, perda, roubo ou extravio ocasionado por mau uso ou negligência, comprometo-me a comunicar imediatamente a coordenação e arcar com os custos de reparo ou reposição do bem à instituição.</p>
+                <div class="documento-assinatura-area">
+                    <p>João Pessoa/PB, <span id="t-data"></span></p>
+                    <div class="linha-assinatura">
+                        <img id="img-assinatura-final" style="display: none;">
+                        <div></div>
+                    </div>
+                    <p>Assinatura do(a) Aluno(a)</p>
+                </div>
+            </div>
+            <div id="area-desenho">
+                <p>Faça sua assinatura no quadro abaixo:</p>
+                <canvas id="canvas-assinatura" width="400" height="150"></canvas>
+                <div class="canvas-actions">
+                    <button id="btn-limpar-canvas" class="btn-canvas-limpar">Limpar</button>
+                    <button id="btn-salvar-pdf" class="btn-canvas-salvar">Aplicar e Salvar PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="cadastro.js"></script>
+</body>
+</html>

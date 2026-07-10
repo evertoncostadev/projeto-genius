@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - GENIUS</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/logo-genius.png" alt="Logo Genius" class="sidebar-logo">
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li>
+                    <a href="#home">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle">
+                        <i class="fas fa-users"></i>
+                        <span>Usuários</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#usuarios_cadastrar">Cadastrar Novo</a></li>
+                        <li><a href="#usuarios_buscar">Buscar Usuário</a></li>
+                    </ul>
+                </li>
+
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle">
+                        <i class="fas fa-laptop"></i>
+                        <span>Notebooks</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#notebooks_cadastrar">Cadastrar Novo</a></li>
+                        <li><a href="#notebooks_buscar">Buscar Notebook</a></li>
+                    </ul>
+                </li>
+                
+                <li class="has-submenu">
+                    <a href="#" class="submenu-toggle">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Empréstimos</span>
+                        <i class="fas fa-chevron-right arrow"></i>
+                    </a>
+                    <ul class="submenu">
+                        <li><a href="#emprestimos_cadastrar">Cadastrar Novo</a></li>
+                        <li><a href="#emprestimos_ativos">Ativos</a></li>
+                        <li><a href="#emprestimos_encerrados">Encerrados</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="#ajuda">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Ajuda</span>
+                    </a>
+                </li>
+
+                <li style="margin-top: 20px;">
+                    <a href="#" id="btn-meu-perfil">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Meu Perfil</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" onclick="fazerLogout()" style="color: #e74c3c;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Sair do Sistema</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <h1>Carregando...</h1>
+        </main>
+    </div>
+    
+    <div id="modal-meu-perfil" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 10000; justify-content: center; align-items: center;">
+        <div style="background: #fff; width: 90%; max-width: 500px; border-radius: 10px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #2c3a4b;"><i class="fas fa-user-cog"></i> Perfil Administrativo</h2>
+                <button onclick="document.getElementById('modal-meu-perfil').style.display='none'" style="background:none; border:none; font-size: 1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            
+            <div id="info-meu-perfil" style="margin-bottom: 20px; color: #444; line-height: 1.6;">
+                <p><strong>Nome:</strong> <span id="my-nome">Carregando...</span></p>
+                <p><strong>E-mail:</strong> <span id="my-email"></span></p>
+                <p><strong>Nível de Acesso:</strong> <span id="my-tipo" style="background:#2c3a4b; color:#fff; padding:2px 8px; border-radius:4px; font-size:0.8rem; text-transform:uppercase;"></span></p>
+            </div>
+
+            <h3 style="color: #e74c3c; margin-bottom: 15px; font-size: 1.1rem;"><i class="fas fa-key"></i> Alterar Senha</h3>
+            <form id="form-alterar-senha" style="display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <label style="font-size:0.85rem; font-weight:bold; color:#555;">Senha Atual</label>
+                    <input type="password" id="senha-atual" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="font-size:0.85rem; font-weight:bold; color:#555;">Nova Senha</label>
+                    <input type="password" id="nova-senha" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                </div>
+                <button type="submit" style="background: #2ecc71; color: #fff; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Salvar Nova Senha</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="/dashboard/dashboard.js"></script>
+    
+    <script>
+        // Lógica rápida para o Modal de Perfil funcionar
+        document.getElementById('btn-meu-perfil')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            try {
+                const res = await fetch('http://localhost:3000/api/me', { headers: { 'Authorization': `Bearer ${token}` } });
+                if(res.ok) {
+                    const dados = await res.json();
+                    document.getElementById('my-nome').textContent = dados.nome;
+                    document.getElementById('my-email').textContent = dados.email;
+                    document.getElementById('my-tipo').textContent = dados.tipo_conta;
+                    document.getElementById('modal-meu-perfil').style.display = 'flex';
+                }
+            } catch(err) { alert('Erro ao carregar perfil.'); }
+        });
+
+        document.getElementById('form-alterar-senha')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const senhaAtual = document.getElementById('senha-atual').value;
+            const novaSenha = document.getElementById('nova-senha').value;
+            const token = localStorage.getItem('token');
+
+            try {
+                const res = await fetch('http://localhost:3000/api/me/senha', {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ senhaAtual, novaSenha })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    alert(data.message);
+                    document.getElementById('form-alterar-senha').reset();
+                    document.getElementById('modal-meu-perfil').style.display = 'none';
+                } else {
+                    alert(data.message); 
+                }
+            } catch(err) { alert('Erro ao se comunicar com o servidor.'); }
+        });
+    </script>
+</body>
+</html>

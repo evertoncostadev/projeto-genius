@@ -1,0 +1,107 @@
+/* frontend/ajuda/ajuda.css */
+
+.ajuda-wrapper h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ajuda-wrapper > p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.accordion {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 900px;
+}
+
+.accordion-item {
+    border-bottom: 1px solid #e0e0e0;
+}
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-header {
+    width: 100%;
+    background-color: #f9f9f9;
+    padding: 18px 20px;
+    border: none;
+    outline: none;
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.accordion-header:hover {
+    background-color: #f0f0f0;
+}
+
+.accordion-header .arrow {
+    margin-left: auto;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.accordion-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: #ffffff;
+    padding: 0 25px;
+}
+
+.accordion-content p,
+.accordion-content li {
+    font-size: 0.95rem;
+    color: #333;
+    line-height: 1.7;
+}
+
+.accordion-content h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.accordion-content ol,
+.accordion-content ul {
+    padding-left: 20px; 
+    margin-bottom: 15px;
+}
+.accordion-content ol li {
+    margin-bottom: 8px;
+}
+
+
+.accordion-item.active .accordion-header {
+    background-color: #f0f0f0;
+}
+
+.accordion-item.active .accordion-header .arrow {
+    transform: rotate(180deg);
+}
+
+.accordion-item.active .accordion-content {
+
+    padding: 25px; 
+    border-top: 1px solid #e0e0e0;
+}

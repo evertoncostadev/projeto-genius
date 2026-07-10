@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Usuários</title>
+    <link rel="stylesheet" href="/usuarios/buscar-usuarios.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/usuarios/buscar-usuarios.js"></script>
+</head>
+<body>
+
+    <h1>Buscar Usuários</h1>
+
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label for="filtro-nome">Filtrar por nome:</label>
+            <input type="text" id="filtro-nome" placeholder="Digite o nome...">
+        </div>
+        <div class="filter-group">
+            <label for="filtro-cpf">Filtrar por CPF:</label>
+            <input type="text" id="filtro-cpf" placeholder="Digite o CPF..." maxlength="14">
+        </div>
+        <div class="filter-group">
+            <label for="filtro-aprovacao">Aprovação:</label>
+            <select id="filtro-aprovacao">
+                <option value="todos">Todos</option>
+                <option value="pendente">Pendentes</option>
+                <option value="aprovado">Aprovados</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filtro-curso">Curso:</label>
+            <select id="filtro-curso">
+                <option value="">Todos</option>
+                <option value="ciencia_dados">Ciência de Dados</option>
+                <option value="ads">Análise e Desenv. de Sistemas</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filtro-periodo">Período:</label>
+            <select id="filtro-periodo">
+                <option value="">Todos</option>
+                <option value="1">1º</option>
+                <option value="2">2º</option>
+                <option value="3">3º</option>
+                <option value="4">4º</option>
+            </select>
+        </div>
+        <button id="btn-buscar" class="btn-buscar"><i class="fas fa-search"></i></button>
+    </div>
+
+    <div class="user-list-container"></div>
+    <div class="pagination" id="pagination-container"></div>
+
+    <div id="modal-perfil" class="modal-backdrop-perfil" style="display: none;">
+        <div class="modal-content-perfil">
+            
+            <div class="modal-header">
+                <div class="header-esq">
+                    <div id="modal-foto"></div>
+                    <h2 id="modal-nome-titulo">Nome do Aluno</h2>
+                </div>
+                <div class="header-dir">
+                    <button id="btn-whatsapp-perfil" class="btn-header zap"><i class="fab fa-whatsapp"></i></button>
+                    <button id="btn-baixar-pdf" class="btn-header pdf"><i class="fas fa-file-pdf"></i> <span id="texto-btn-pdf">Baixar Perfil</span></button>
+                    <button id="btn-fechar-perfil" class="close-btn" title="Fechar">&times;</button>
+                </div>
+            </div>
+
+            <div id="alerta-emprestimo" class="alerta-emprestimo" style="display: none;"></div>
+
+            <div class="tabs-perfil">
+                <button class="tab-btn active" data-target="tab-dados">Dados Cadastrais</button>
+                <button class="tab-btn" data-target="tab-historico">Histórico de Empréstimos</button>
+            </div>
+
+            <div id="conteudo-para-pdf">
+                <div id="tab-dados" class="tab-content active">
+                    <form id="form-edicao-modal" novalidate>
+                        <input type="hidden" id="edit-id">
+                        
+                        <h4 style="color: #2c3a4b; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 0;">Dados Pessoais & Contato</h4>
+                        <div class="grid-edicao">
+                            <div class="input-modal">
+                                <label>Nome Completo</label>
+                                <input type="text" id="edit-nome" name="nome" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>CPF</label>
+                                <input type="text" id="edit-cpf" name="cpf" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Data de Nascimento</label>
+                                <input type="date" id="edit-data_nascimento" name="data_nascimento" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Sexo</label>
+                                <select id="edit-sexo" name="sexo" required>
+                                    <option value="masculino">Masculino</option>
+                                    <option value="feminino">Feminino</option>
+                                    <option value="outro">Outro</option>
+                                    <option value="nao_informar">Prefiro não informar</option>
+                                </select>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>E-mail</label>
+                                <input type="email" id="edit-email" name="email" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>WhatsApp</label>
+                                <input type="text" id="edit-telefone" name="telefone" required>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+
+                        <h4 style="color: #2c3a4b; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px;">Informações Acadêmicas</h4>
+                        <div class="grid-edicao">
+                            <div class="input-modal">
+                                <label>Matrícula</label>
+                                <input type="text" id="edit-matricula" name="matricula" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Curso</label>
+                                <select id="edit-curso" name="curso" required>
+                                    <option value="ads">Análise e Desenv. de Sistemas</option>
+                                    <option value="ciencia_dados">Ciência de Dados</option>
+                                    <option value="redes">Redes</option>
+                                </select>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Período</label>
+                                <select id="edit-periodo" name="periodo" required>
+                                    <option value="" disabled selected>Selecione</option>
+                                    <option value="1">1º</option>
+                                    <option value="2">2º</option>
+                                    <option value="3">3º</option>
+                                    <option value="4">4º</option>
+                                </select>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Turno</label>
+                                <select id="edit-turno" name="turno" required>
+                                    <option value="matutino_noturno">Matutino - Noturno</option>
+                                    <option value="vespertino_noturno">Vespertino - Noturno</option>
+                                </select>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal" style="grid-column: span 2;">
+                                <label>Documentos Anexados</label>
+                                <div id="modal-docs-links" style="font-size:0.95rem; margin-top:5px;"></div>
+                            </div>
+                        </div>
+
+                        <h4 style="color: #2c3a4b; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-top: 20px;">Endereço</h4>
+                        <div class="grid-edicao">
+                            <div class="input-modal">
+                                <label>CEP</label>
+                                <input type="text" id="edit-cep" name="cep" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Rua</label>
+                                <input type="text" id="edit-rua" name="rua" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Número</label>
+                                <input type="text" id="edit-numero_end" name="numero_end" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Complemento</label>
+                                <input type="text" id="edit-complemento" name="complemento">
+                            </div>
+                            <div class="input-modal">
+                                <label>Bairro</label>
+                                <input type="text" id="edit-bairro" name="bairro" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>Cidade</label>
+                                <input type="text" id="edit-cidade" name="cidade" required>
+                                <span class="error-msg"></span>
+                            </div>
+                            <div class="input-modal">
+                                <label>UF</label>
+                                <input type="text" id="edit-uf" name="uf" maxlength="2" required>
+                                <span class="error-msg"></span>
+                            </div>
+                        </div>
+
+                        <div class="area-salvar">
+                            <button type="submit" id="btn-salvar-alteracoes" class="btn-salvar-modal" style="display: none;">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="tab-historico" class="tab-content" style="display: none;">
+                    
+                    <div class="filtro-hist" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <select id="filtro-dia-hist" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; cursor: pointer; outline: none;">
+                            <option value="todos">Dia (Todos)</option>
+                            <option value="01">01</option> <option value="02">02</option> <option value="03">03</option>
+                            <option value="04">04</option> <option value="05">05</option> <option value="06">06</option>
+                            <option value="07">07</option> <option value="08">08</option> <option value="09">09</option>
+                            <option value="10">10</option> <option value="11">11</option> <option value="12">12</option>
+                            <option value="13">13</option> <option value="14">14</option> <option value="15">15</option>
+                            <option value="16">16</option> <option value="17">17</option> <option value="18">18</option>
+                            <option value="19">19</option> <option value="20">20</option> <option value="21">21</option>
+                            <option value="22">22</option> <option value="23">23</option> <option value="24">24</option>
+                            <option value="25">25</option> <option value="26">26</option> <option value="27">27</option>
+                            <option value="28">28</option> <option value="29">29</option> <option value="30">30</option>
+                            <option value="31">31</option>
+                        </select>
+                        
+                        <select id="filtro-mes-hist" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; cursor: pointer; outline: none;">
+                            <option value="todos">Mês (Todos)</option>
+                            <option value="01">Janeiro</option> <option value="02">Fevereiro</option> <option value="03">Março</option>
+                            <option value="04">Abril</option> <option value="05">Maio</option> <option value="06">Junho</option>
+                            <option value="07">Julho</option> <option value="08">Agosto</option> <option value="09">Setembro</option>
+                            <option value="10">Outubro</option> <option value="11">Novembro</option> <option value="12">Dezembro</option>
+                        </select>
+                        
+                        <select id="filtro-ano-hist" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; cursor: pointer; outline: none;">
+                            <option value="todos">Ano (Todos)</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                    </div>
+
+                    <div id="lista-historico" class="lista-historico">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

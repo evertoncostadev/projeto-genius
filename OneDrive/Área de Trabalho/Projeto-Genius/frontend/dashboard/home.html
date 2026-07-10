@@ -1,0 +1,84 @@
+<h1>Olá, Everton. Seja bem-vindo!</h1>
+
+<h3 style="color: #2c3a4b; font-size: 1.3rem; margin-top: 20px; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid #ccc; padding-bottom: 8px;">
+    <i class="fas fa-laptop" style="margin-right: 8px; color: #3498db;"></i> Monitoramento de Notebooks
+</h3>
+
+<div class="cards-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+    <div class="info-card" style="flex: 1; min-width: 200px;">
+        <div class="card-header">
+            <h2 id="count-total" style="color: #4A90E2;">0</h2>
+            <span class="card-icon" style="background-color: #4A90E2; width: 15px; height: 15px; border-radius: 4px;"></span>
+        </div>
+        <p style="font-weight: 500;">Total Cadastrados</p>
+    </div>
+    <div class="info-card" style="flex: 1; min-width: 200px;">
+        <div class="card-header">
+            <h2 id="count-disponiveis">0</h2>
+            <span class="card-icon disponivel"></span>
+        </div>
+        <p>Disponíveis</p>
+    </div>
+    <div class="info-card" style="flex: 1; min-width: 200px;">
+        <div class="card-header">
+            <h2 id="count-emprestados">0</h2>
+            <span class="card-icon emprestado"></span>
+        </div>
+        <p>Emprestados</p>
+    </div>
+    <div class="info-card" style="flex: 1; min-width: 200px;">
+        <div class="card-header">
+            <h2 id="count-desativados">0</h2>
+            <span class="card-icon indisponivel"></span>
+        </div>
+        <p>Indisponíveis</p>
+    </div>
+</div>
+
+<h3 style="color: #2c3a4b; font-size: 1.3rem; margin-top: 30px; margin-bottom: 15px; font-weight: 600; border-bottom: 2px solid #ccc; padding-bottom: 8px;">
+    <i class="fas fa-exclamation-triangle" style="margin-right: 8px; color: #e74c3c;"></i> Ações Exigidas
+</h3>
+
+<div class="cards-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+    <div class="info-card" onclick="window.location.hash='#usuarios_buscar'" style="flex: 1; min-width: 300px; cursor: pointer; border-left: 4px solid #f39c12; background-color: var(--card-background-color, #D9D9D9);">
+        <div class="card-header">
+            <h2 id="live-pendentes" style="color: #f39c12;">0</h2>
+            <span class="card-icon" style="background-color: #f39c12; display:flex; justify-content:center; align-items:center; border-radius: 4px;">
+                <i class="fas fa-user-clock" style="color:white; font-size: 0.9rem;"></i>
+            </span>
+        </div>
+        <p style="font-weight: 500; color: #555;">Alunos Aguardando Aprovação</p>
+    </div>
+    
+    <div class="info-card" onclick="window.location.hash='#emprestimos_ativos'" style="flex: 1; min-width: 300px; cursor: pointer; border-left: 4px solid #e74c3c; background-color: var(--card-background-color, #D9D9D9);">
+        <div class="card-header">
+            <h2 id="live-atrasados" style="color: #e74c3c;">0</h2>
+            <span class="card-icon" style="background-color: #e74c3c; display:flex; justify-content:center; align-items:center; border-radius: 4px;">
+                <i class="fas fa-bomb" style="color:white; font-size: 0.9rem;"></i>
+            </span>
+        </div>
+        <p style="font-weight: 500; color: #e74c3c;">Empréstimos ATRASADOS!</p>
+    </div>
+</div>
+
+<div class="charts-container" style="margin-top: 30px; display: flex; flex-wrap: wrap; gap: 20px;">
+    
+    <div class="chart-box" style="flex: 2; min-width: 400px; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; background-color: var(--card-background-color, #D9D9D9); padding: 20px; border-radius: 12px;">
+        <h3 style="color: #2c3a4b; font-size: 1.1rem; margin-bottom: 20px; font-weight: 600; width: 100%; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+            <i class="fas fa-calendar-week" style="margin-right: 8px;"></i> Demanda da Semana
+        </h3>
+        <div style="width: 100%; flex: 1; position: relative;">
+            <canvas id="barChartSemana"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-box" style="flex: 1; min-width: 300px; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; overflow-y: auto; background-color: var(--card-background-color, #D9D9D9); padding: 20px; border-radius: 12px;">
+        <h3 style="color: #2c3a4b; font-size: 1.1rem; margin-bottom: 10px; font-weight: 600; width: 100%; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+            <i class="fas fa-clock" style="margin-right: 8px;"></i> Próximas Devoluções
+        </h3>
+        <div id="lista-devolucoes" style="width: 100%;">
+            </div>
+    </div>
+</div>
+
+<script src="/dashboard/home.js"></script>

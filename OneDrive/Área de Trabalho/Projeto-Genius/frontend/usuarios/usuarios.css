@@ -1,0 +1,190 @@
+/* frontend/usuarios/usuarios.css */
+
+.form-wrapper-usuario {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.form-wrapper-usuario h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 30px;
+}
+
+.form-wrapper-usuario fieldset {
+    border: none;
+    padding: 0;
+    margin-bottom: 25px;
+}
+
+.form-wrapper-usuario legend {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--primary-color);
+    width: 100%;
+}
+
+/* ================= A GRID BLINDADA (Isso garante as 3 colunas) ================= */
+.form-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px 25px !important;
+    width: 100% !important;
+}
+
+.form-grid .span-2 { grid-column: span 2 !important; }
+.form-grid .span-3 { grid-column: span 3 !important; }
+
+/* ================= INPUTS E CAIXAS ================= */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 500; 
+    color: var(--text-color, #333); /* Usa a cor do seu tema */
+    margin-bottom: 6px;
+}
+
+/* Aqui eu removi os !important e as cores forçadas. 
+  Isso permite que o seu painel dite a cor da borda, a fonte e o padding natural.
+*/
+.input-group input[type="text"],
+.input-group input[type="date"],
+.input-group input[type="email"],
+.input-group input[type="password"], 
+.input-group select {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: 1px solid var(--border-color, #ccc); /* Volta pra borda original */
+    background-color: var(--bg-color, #fff);      
+    border-radius: var(--border-radius, 8px); 
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+/* Mantém apenas a setinha customizada do select para não ficar feio */
+.input-group select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%232c3a4b" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 40px;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: var(--primary-color); 
+}
+
+/* ================= BOTÃO DE UPLOAD CORRIGIDO ================= */
+.file-input-custom .file-input-wrapper {
+    display: flex;
+    align-items: stretch; 
+    width: 100%;
+    border: 1px solid var(--border-color, #ccc); 
+    border-radius: var(--border-radius, 8px);       
+    overflow: hidden;          
+    background-color: var(--bg-color, #fff);
+    box-sizing: border-box;
+}
+
+.file-input-custom input[type="file"] { display: none; }
+
+.file-input-custom .file-btn {
+    padding: 12px 15px;
+    margin: 0; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color, #2D3748); 
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    border: none; 
+    border-right: 1px solid var(--border-color, #ccc); 
+}
+
+.file-input-custom .file-name-display {
+    padding: 12px 15px; 
+    font-size: 0.95rem; 
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0; 
+    background-color: transparent;
+    border: none; 
+}
+
+/* ================= ERROS VISUAIS ================= */
+.input-error {
+    border-color: #e74c3c !important;
+    background-color: #fffaf9 !important; 
+}
+.error-msg {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 5px;
+    display: none; 
+}
+.error-msg.visible {
+    display: block;
+}
+
+/* ================= BOTÃO SUBMIT ================= */
+.form-actions { 
+    grid-column: span 3 !important; 
+    text-align: right; 
+    margin-top: 20px; 
+}
+
+.btn-submit-usuario {
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #ffffff;
+    background-color: var(--primary-color, #2c3a4b);
+    border: none;
+    border-radius: var(--border-radius, 8px);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+.btn-submit-usuario:hover {
+    filter: brightness(0.9);
+}
+
+/* ================= RESPONSIVIDADE ================= */
+@media (max-width: 900px) {
+    .form-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .form-grid .span-3 { grid-column: span 2 !important; }
+}
+
+@media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr !important; }
+    .form-grid .span-2, .form-grid .span-3 { grid-column: span 1 !important; }
+    .form-wrapper-usuario h2 { font-size: 1.5rem; }
+}

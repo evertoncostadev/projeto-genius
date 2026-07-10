@@ -1,0 +1,255 @@
+/* frontend/portal/portal.css */
+
+:root {
+    /* Cores extraídas diretamente das imagens */
+    --color-dark: #273746;     /* Azul/Cinza bem escuro (Header, Como Funciona, Footer) */
+    --color-blue: #406c8a;     /* Azul Médio (Pill, Botões, Hero Shape, FAQ Box) */
+    --color-light: #eff3f7;    /* Fundo geral da página (Cinza muito claro) */
+    --color-text-dark: #333333;
+    --color-text-grey: #666666;
+    --color-white: #ffffff;
+}
+
+html { scroll-behavior: smooth; }
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+body { background-color: var(--color-light); color: var(--color-text-dark); overflow-x: hidden; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+/* ================= HEADER ================= */
+.portal-header { background: var(--color-dark); padding: 20px 0; position: sticky; top: 0; z-index: 1000; transition: all 0.3s; }
+.header-container { display: flex; justify-content: space-between; align-items: center; }
+.portal-header .logo { height: 35px; cursor: pointer; transition: transform 0.3s; }
+.portal-header .logo:hover { transform: scale(1.05); }
+
+/* Efeito de sublinhado animado no menu */
+.header-nav a { 
+    color: var(--color-white); 
+    text-decoration: none; 
+    margin-left: 25px; 
+    font-size: 0.95rem; 
+    font-weight: 500; 
+    transition: 0.3s; 
+    opacity: 0.9; 
+    position: relative;
+}
+.header-nav a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -5px;
+    left: 0;
+    background-color: var(--color-blue);
+    transition: width 0.3s ease;
+}
+.header-nav a:hover { opacity: 1; color: var(--color-white); }
+.header-nav a:hover::after { width: 100%; }
+
+/* ================= HERO ================= */
+.hero-section { padding: 80px 0; background: var(--color-light); }
+.hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center; }
+.hero-text h1 { font-size: 4rem; color: var(--color-dark); line-height: 1.1; margin-bottom: 20px; font-weight: 800; }
+.text-blue { color: var(--color-blue); }
+.hero-text p { font-size: 1rem; color: var(--color-text-grey); margin-bottom: 30px; line-height: 1.6; }
+
+.hero-btns { display: flex; gap: 15px; }
+.btn-main, .btn-sub { 
+    padding: 15px 30px; 
+    border-radius: 12px; 
+    text-decoration: none; 
+    font-weight: bold; 
+    font-size: 0.95rem; 
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15); 
+    display: inline-block;
+}
+.btn-main { background: var(--color-blue); color: var(--color-white); border: 2px solid var(--color-blue); }
+.btn-sub { background: var(--color-dark); color: var(--color-white); border: 2px solid var(--color-dark); }
+
+/* Hover (passar o mouse) e Active (clicar) nos botões */
+.btn-main:hover, .btn-sub:hover { 
+    transform: translateY(-4px); 
+    box-shadow: 0 12px 20px rgba(0,0,0,0.25); 
+}
+.btn-main:active, .btn-sub:active { 
+    transform: translateY(1px) scale(0.97); /* Efeito de apertar o botão */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
+}
+
+/* Shape azul atrás da foto */
+.hero-img-container { position: relative; display: flex; justify-content: center; align-items: flex-end; padding-top: 40px; }
+.hero-shape { position: absolute; width: 100%; height: 85%; background: var(--color-blue); bottom: 0; right: 0; border-radius: 30px; z-index: 1; transition: transform 0.5s; }
+.hero-img-container:hover .hero-shape { transform: scale(1.02) rotate(1deg); } /* Shape reage sutilmente ao mouse */
+.hero-img { width: 85%; position: relative; z-index: 2; display: block; transition: transform 0.5s; }
+.hero-img-container:hover .hero-img { transform: translateY(-5px); }
+
+/* ================= COMO FUNCIONA ================= */
+.how-it-works { background: var(--color-dark); padding: 80px 0 100px 0; text-align: center; }
+.section-title-white { color: var(--color-white); font-size: 2.5rem; margin-bottom: 50px; }
+
+.steps-wrapper { display: flex; align-items: center; justify-content: center; gap: 15px; }
+.step-card { 
+    background: var(--color-white); 
+    padding: 40px 30px; 
+    border-radius: 20px; 
+    flex: 1; 
+    text-align: left; 
+    min-height: 200px; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Transição elástica bonita */
+    cursor: default;
+}
+.step-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+.step-card h3 { color: var(--color-dark); margin-bottom: 15px; font-size: 1.3rem; transition: color 0.3s; }
+.step-card:hover h3 { color: var(--color-blue); } /* Título muda de cor no hover */
+.step-card p { font-size: 0.9rem; color: var(--color-text-grey); line-height: 1.5; }
+.step-arrow { color: var(--color-white); font-size: 2rem; font-weight: 300; opacity: 0.8; transition: transform 0.3s; }
+.steps-wrapper:hover .step-arrow { transform: translateX(5px); opacity: 1; }
+
+/* ================= REQUISITOS & PILL ================= */
+.eligibility-section { background: var(--color-light); padding: 0 0 80px 0; text-align: center; }
+
+/* Pill de Status Perfeitamente Centralizado na Divisa */
+.stats-floating-pill { 
+    max-width: 700px; 
+    margin: 0 auto; 
+    transform: translateY(-50%);
+    background: var(--color-blue); 
+    padding: 30px; 
+    border-radius: 25px; 
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center; 
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2); 
+    color: var(--color-white); 
+    position: relative;
+    z-index: 10;
+    transition: transform 0.4s, box-shadow 0.4s;
+}
+.stats-floating-pill:hover {
+    transform: translateY(-52%) scale(1.02); /* Flutua um pouco mais no hover */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+.stat-item { text-align: center; }
+.stat-value { display: block; font-size: 2.2rem; font-weight: bold; margin-bottom: 5px; }
+.stat-label { font-size: 1.1rem; font-weight: 500; }
+
+.section-title-blue { color: var(--color-blue); font-size: 2.5rem; margin-top: -30px; margin-bottom: 15px; }
+.section-subtitle { color: var(--color-text-dark); margin-bottom: 50px; font-size: 0.95rem; }
+
+.eligibility-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+.check-card { 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+    padding: 25px 30px; 
+    background: transparent; 
+    border: 1.5px solid var(--color-blue); 
+    border-radius: 12px; 
+    text-align: left; 
+    transition: all 0.3s;
+    cursor: default;
+}
+/* Efeitos na caixa de requisitos */
+.check-card:hover {
+    background-color: var(--color-white);
+    box-shadow: 0 10px 20px rgba(64, 108, 138, 0.15);
+    transform: translateY(-3px);
+}
+.icon-circle { 
+    background: var(--color-dark); 
+    color: white; 
+    width: 35px; 
+    height: 35px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    flex-shrink: 0; 
+    font-size: 0.9rem; 
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.check-card:hover .icon-circle {
+    background: var(--color-blue); /* Ícone muda de cor */
+    transform: scale(1.15); /* Ícone cresce levemente */
+}
+.check-card p { font-size: 0.95rem; color: var(--color-text-dark); font-weight: 500; line-height: 1.4; transition: color 0.3s; }
+
+/* ================= QUEM SOMOS ================= */
+.about-us-section { background: var(--color-dark); padding: 100px 0; text-align: center; }
+.about-content { max-width: 800px; margin: 0 auto; color: var(--color-white); opacity: 0.9; }
+.about-content p { font-size: 1.1rem; margin-bottom: 20px; line-height: 1.6; }
+
+/* ================= FAQ ================= */
+.faq-section { background: var(--color-light); padding: 80px 0; text-align: center; }
+.faq-box { max-width: 800px; margin: 0 auto; background: var(--color-blue); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+
+.faq-item { background: var(--color-dark); border-radius: 12px; margin-bottom: 15px; overflow: hidden; text-align: left; transition: all 0.3s; }
+.faq-item summary { 
+    padding: 20px 25px; 
+    font-weight: 600; 
+    color: var(--color-white); 
+    cursor: pointer; 
+    list-style: none; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    transition: background-color 0.3s;
+}
+.faq-item summary:hover {
+    background-color: #2e4153; /* Clareia a aba da pergunta ao passar o mouse */
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary i { font-size: 1rem; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.faq-item[open] summary { background-color: #2e4153; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.faq-item[open] summary i { transform: rotate(180deg); color: var(--color-accent); }
+.faq-item p { padding: 20px 25px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5; animation: fadeDown 0.4s ease-in-out; }
+
+/* Animação suave para abrir o texto do FAQ */
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= FOOTER ================= */
+.portal-footer { background: var(--color-dark); padding: 40px 0; color: var(--color-white); }
+.footer-grid { display: flex; justify-content: space-between; align-items: center; }
+.logo-footer { height: 35px; cursor: pointer; transition: transform 0.3s; }
+.logo-footer:hover { transform: scale(1.05); }
+.footer-links { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.footer-links a { 
+    color: var(--color-white); 
+    text-decoration: none; 
+    font-size: 0.9rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    opacity: 0.8; 
+    transition: all 0.3s; 
+}
+.footer-links a i { font-size: 0.7rem; transition: transform 0.3s; }
+/* Setinha anda pra direita no hover */
+.footer-links a:hover { opacity: 1; color: var(--color-blue); padding-left: 5px; }
+.footer-links a:hover i { transform: translateX(3px); }
+
+/* ================= RESPONSIVO MOBILE ================= */
+@media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; text-align: center; }
+    .hero-btns { justify-content: center; }
+    .header-nav { display: none; }
+    
+    .steps-wrapper { flex-direction: column; }
+    .step-arrow { transform: rotate(90deg); margin: 10px 0; }
+    
+    .stats-floating-pill { flex-direction: column; gap: 30px; transform: translateY(-30px); margin-bottom: 0; width: 90%; }
+    .stats-floating-pill:hover { transform: translateY(-30px); /* Tira o efeito de subir no mobile p não quebrar layout */ }
+    
+    .eligibility-grid { grid-template-columns: 1fr; }
+    .footer-grid { flex-direction: column; gap: 30px; align-items: flex-start; }
+}
