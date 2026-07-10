@@ -671,16 +671,17 @@ app.get('/api/dashboard-operacional', autenticarToken, apenasAdmin, async (req, 
         // 1. Cadastros Pendentes
         const pendentesRes = await db.query("SELECT COUNT(*) FROM usuarios WHERE status_aprovacao = 'pendente'");
         
-        // 2. Empréstimos Atrasados (Corrigido para fuso do Brasil)
+        // 2. Empréstimos Atrasados
         const atrasadosRes = await db.query("SELECT COUNT(*) FROM emprestimos WHERE status = 'ativo' AND data_devolucao_prevista < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')");
         
-        // 3. Próximas Devoluções (Lista com os 5 próximos a devolver, que ainda estão no prazo - Corrigido para fuso do Brasil)
+        // 3. Próximas Devoluções (Agora exibe todos os ativos, incluindo os atrasados)
         const proximasRes = await db.query(`
-            SELECT e.id, e.data_devolucao_prevista, u.nome, n.tombamento
+            SELECT e.id, e.data_devolucao_prevista, u.nome, n.tombamento,
+                   (e.data_devolucao_prevista < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')) AS is_atrasado
             FROM emprestimos e
             JOIN usuarios u ON e.usuario_id = u.id
             JOIN notebooks n ON e.notebook_id = n.id
-            WHERE e.status = 'ativo' AND e.data_devolucao_prevista >= (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+            WHERE e.status = 'ativo'
             ORDER BY e.data_devolucao_prevista ASC
             LIMIT 5
         `);
