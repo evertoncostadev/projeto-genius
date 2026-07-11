@@ -2,6 +2,31 @@
 
 @import url('/usuarios/buscar-usuarios.css');
 
+/* --- CABEÇALHO DA PÁGINA (Título e Botão PDF) --- */
+.page-header {
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.page-header h1 {
+    margin: 0;
+    flex: 1; 
+}
+
+#btn-baixar-relatorio {
+    margin-left: auto !important; 
+    white-space: nowrap; 
+}
+
+#btn-baixar-relatorio:hover {
+    background-color: #c0392b !important;
+}
+
+/* --- CONTEÚDO PRINCIPAL --- */
 .loan-list-container {
     display: flex;
     flex-direction: column;
@@ -40,20 +65,20 @@
     overflow: hidden; 
 }
 
-/* Mantém o padding antigo apenas para os cards encerrados (que não tem sanfona) */
-.loan-card.encerrado {
-    padding: 20px; 
-    cursor: default; 
-}
-
 .loan-card:hover {
     transform: translateY(-5px); 
     box-shadow: 0 6px 14px rgba(45, 55, 72, 0.3);
 }
 
+/* Ajustes específicos para os cards Encerrados */
+.loan-card.encerrado {
+    padding: 20px; 
+}
+
 .loan-card.encerrado:hover {
-    transform: none; 
-    box-shadow: none; 
+    transform: scale(1.02); /* Dá aquele Zoom gostoso de 2% */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); /* Sombra maior para dar profundidade */
+    z-index: 2; /* Garante que ele fique por cima dos outros na hora do zoom */
 }
 
 /* --- TAG FLUANTE (ATRASADO / EM DIA) --- */
@@ -325,8 +350,8 @@
 /* ======================================= */
 
 #grupo-filtro-data-enc {
-    flex: 2; /* Informa que este grupo precisa de mais espaço que os outros */
-    min-width: 280px; /* Impede os campos de se esmagarem em telas menores */
+    flex: 2; 
+    min-width: 280px; 
     display: flex;
     gap: 10px;
 }
@@ -334,7 +359,7 @@
 #grupo-filtro-data-enc > div {
     display: flex;
     flex-direction: column;
-    flex: 1; /* Faz o "De" e "Até" dividirem o espaço 50/50 */
+    flex: 1; 
     width: 100%;
 }
 
@@ -354,8 +379,8 @@
     border-radius: 8px;
     background-color: #f9f9f9;
     color: #555;
-    height: 42px; /* Altura exata para alinhar com os outros campos e o botão */
-    box-sizing: border-box; /* Garante que o padding não estique o elemento para fora */
+    height: 42px; 
+    box-sizing: border-box; 
     transition: all 0.2s ease;
 }
 

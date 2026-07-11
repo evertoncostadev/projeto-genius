@@ -162,7 +162,6 @@ async function buscarEmprestimos() {
         if (grupoAtrasoEnc) grupoAtrasoEnc.style.display = 'flex'; 
         if (btnBaixarPdf) btnBaixarPdf.style.display = 'flex'; 
 
-        // AUTO-PREENCHIMENTO: Primeiro dia do mês ATÉ Hoje
         const hoje = new Date();
         const inputInicio = document.getElementById('filtro-data-inicio');
         const inputFim = document.getElementById('filtro-data-fim');
@@ -413,7 +412,6 @@ function aplicarFiltrosEmprestimo() {
     const filtroNotebook = document.getElementById('filtro-notebook');
     const filtroStatusEl = document.getElementById('filtro-status'); 
 
-    // Novos Elementos de Data
     const inputInicio = document.getElementById('filtro-data-inicio') ? document.getElementById('filtro-data-inicio').value : '';
     const inputFim = document.getElementById('filtro-data-fim') ? document.getElementById('filtro-data-fim').value : '';
     const filtroCondicaoEnc = document.getElementById('filtro-condicao-enc') ? document.getElementById('filtro-condicao-enc').value : 'todos';
@@ -446,10 +444,8 @@ function aplicarFiltrosEmprestimo() {
             const dataDevReal = new Date(emp.dataDevolucaoReal);
             const dataDevPrevista = new Date(emp.dataDevolucaoPrevista);
             
-            // Zeramos a hora para a comparação de data funcionar perfeitamente
             const dataDevApenasDia = new Date(dataDevReal.getFullYear(), dataDevReal.getMonth(), dataDevReal.getDate());
 
-            // Lógica do filtro "DE" e "ATÉ"
             if (inputInicio) {
                 const [ano, mes, dia] = inputInicio.split('-');
                 const dataInicio = new Date(ano, mes - 1, dia);
@@ -565,7 +561,7 @@ function adicionarListenersFiltroEmprestimo() {
 }
 
 // ==========================================
-// EXPORTAÇÃO DE PDF (Histórico Completo)
+// EXPORTAÇÃO DE PDF (Tabela Nativa / Vetorial)
 // ==========================================
 window.baixarRelatorioEncerrados = function() {
     if (emprestimosFiltrados.length === 0) {
@@ -579,7 +575,7 @@ window.baixarRelatorioEncerrados = function() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
     btn.disabled = true;
 
-    // Configura o título do PDF baseado nas datas escolhidas
+    // Configura o título com as datas
     const dataHoje = new Date().toLocaleDateString('pt-BR');
     let periodoTexto = 'Período Completo';
     const inputInicio = document.getElementById('filtro-data-inicio');
@@ -588,79 +584,94 @@ window.baixarRelatorioEncerrados = function() {
     if(inputInicio && inputFim && inputInicio.value && inputFim.value) {
         const dI = inputInicio.value.split('-').reverse().join('/');
         const dF = inputFim.value.split('-').reverse().join('/');
-        periodoTexto = `Período Filtrado: ${dI} a ${dF}`;
+        periodoTexto = `${dI} a ${dF}`;
     }
 
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px'; 
-    tempContainer.style.top = '0';
-    tempContainer.style.width = '1100px'; 
-    tempContainer.style.backgroundColor = '#1e293b'; 
-    tempContainer.style.color = '#ffffff';
-    tempContainer.style.padding = '30px';
-    tempContainer.style.fontFamily = "'Poppins', sans-serif, Arial";
+    // Inicializa o jsPDF (Orientação Paisagem 'l', unidade 'mm', formato 'A4')
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    // 1. Títulos do PDF
+    doc.setFontSize(18);
+    doc.setTextColor(44, 62, 80);
+    doc.text('Histórico de Empréstimos Encerrados', 14, 20);
     
-    tempContainer.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #334155; padding-bottom: 15px;">
-            <h1 style="margin: 0; color: #90CAF9;">Histórico de Empréstimos Encerrados</h1>
-            <p style="margin: 5px 0; color: #94a3b8;">Projeto Limites do Visível | ${periodoTexto}</p>
-            <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;">Total de registros impressos: ${emprestimosFiltrados.length}</p>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;" id="pdf-grid"></div>
-    `;
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Projeto Limites do Visível | Período: ${periodoTexto}`, 14, 28);
+    doc.text(`Gerado em: ${dataHoje} | Total de registros: ${emprestimosFiltrados.length}`, 14, 33);
 
-    const grid = tempContainer.querySelector('#pdf-grid');
-
-    emprestimosFiltrados.forEach(emp => {
-        const card = document.createElement('div');
-        card.style.backgroundColor = '#2D3748';
-        card.style.border = '1px solid #475569';
-        card.style.borderRadius = '8px';
-        card.style.padding = '15px';
-        
-        const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-        const dataDev = emp.dataDevolucaoReal ? new Date(emp.dataDevolucaoReal).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+    // 2. Preparar os Cabeçalhos e as Linhas da Tabela
+    const cabecalho = [['Aluno / CPF', 'Notebook', 'Retirada', 'Devolução', 'Status', 'Observações']];
+    
+    const linhas = emprestimosFiltrados.map(emp => {
+        const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const dataDev = emp.dataDevolucaoReal ? new Date(emp.dataDevolucaoReal).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
         const dataDevPrevista = new Date(emp.dataDevolucaoPrevista);
         const dataDevolucaoRealDate = new Date(emp.dataDevolucaoReal);
         
         const foiAtrasado = emp.dataDevolucaoReal && dataDevolucaoRealDate > dataDevPrevista;
-        const badge = foiAtrasado ? '<span style="background:#e74c3c; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;">COM ATRASO</span>' : '<span style="background:#2ecc71; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;">NO PRAZO</span>';
+        const statusTexto = foiAtrasado ? 'COM ATRASO' : 'NO PRAZO';
 
-        card.innerHTML = `
-            <div style="margin-bottom: 8px; font-size: 1rem;"><strong>👤 Aluno:</strong> ${escaparHTML(emp.usuario.nome)} <span style="font-size:0.85rem">(CPF: ${escaparHTML(emp.usuario.cpf)})</span></div>
-            <div style="margin-bottom: 10px; font-size: 1rem;"><strong>💻 Notebook:</strong> ${escaparHTML(emp.notebook.tombamento)}</div>
-            <div style="font-size: 0.85rem; color: #cbd5e1; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">
-                <strong>Retirado em:</strong> ${dataEmp} <br>
-                <strong>Devolvido em:</strong> ${dataDev} ${badge}
-            </div>
-            <div style="margin-top: 10px; font-size: 0.8rem; color: #94a3b8;">
-                <strong>Obs Devolução:</strong> ${escaparHTML(emp.observacoesDevolucao || 'Nenhuma observação cadastrada.')}
-            </div>
-        `;
-        grid.appendChild(card);
+        return [
+            `${emp.usuario.nome}\nCPF: ${emp.usuario.cpf}`,
+            emp.notebook.tombamento,
+            dataEmp,
+            dataDev,
+            statusTexto,
+            emp.observacoesDevolucao || 'Nenhuma.'
+        ];
     });
 
-    document.body.appendChild(tempContainer); 
-
-    const opcoes = {
-        margin:       10,
-        filename:     `Relatorio_Historico_Polo_${dataHoje.replace(/\//g, '-')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
-
-    html2pdf().set(opcoes).from(tempContainer).save().then(() => {
-        document.body.removeChild(tempContainer); 
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
-    }).catch(err => {
-        console.error(err);
-        document.body.removeChild(tempContainer);
-        btn.innerHTML = textoOriginal;
-        btn.disabled = false;
+    // 3. Desenhar a Tabela Mágica com as Linhas (Bordas) Solicitadas
+    doc.autoTable({
+        head: cabecalho,
+        body: linhas,
+        startY: 40, 
+        theme: 'grid', // O tema 'grid' desenha as linhas horizontais e verticais
+        styles: { 
+            font: 'helvetica', 
+            fontSize: 9,
+            cellPadding: 5, // Dá um pequeno respiro no texto dentro da célula
+            lineColor: [100, 116, 139], // Define a cor da linha (um tom de cinza azulado bem elegante)
+            lineWidth: 0.3 // Engrossa a linha para ficar perfeitamente visível (como no seu desenho)
+        },
+        headStyles: { 
+            fillColor: [44, 62, 80], 
+            textColor: 255, 
+            fontStyle: 'bold',
+            lineColor: [44, 62, 80], // Remove bordas claras do cabeçalho
+            lineWidth: 0.3
+        },
+        alternateRowStyles: {
+            fillColor: [248, 250, 252] // Efeito zebra hiper sutil (fundo branco / fundo cinza clarinho)
+        },
+        columnStyles: {
+            0: { cellWidth: 55 }, // Coluna Aluno
+            1: { cellWidth: 30 }, // Notebook
+            2: { cellWidth: 35 }, // Retirada
+            3: { cellWidth: 35 }, // Devolução
+            4: { cellWidth: 25, fontStyle: 'bold' }, // Status
+            5: { cellWidth: 'auto' } // Observações pega o resto do espaço
+        },
+        didParseCell: function(data) {
+            // Pinta o texto da coluna de "Status" de verde ou vermelho automaticamente
+            if (data.section === 'body' && data.column.index === 4) {
+                if (data.cell.raw === 'COM ATRASO') {
+                    data.cell.styles.textColor = [231, 76, 60]; // Vermelho
+                } else {
+                    data.cell.styles.textColor = [39, 174, 96]; // Verde
+                }
+            }
+        }
     });
+
+    // 4. Salvar o Arquivo
+    doc.save(`Relatorio_Encerrados_${dataHoje.replace(/\//g, '-')}.pdf`);
+
+    // Restaura o botão
+    btn.innerHTML = textoOriginal;
+    btn.disabled = false;
 };
 
 setTimeout(buscarEmprestimos, 0);
