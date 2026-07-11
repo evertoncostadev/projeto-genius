@@ -489,6 +489,33 @@ app.get('/notebooks/:id', autenticarToken, apenasAdmin, async (req, res) => {
     }
 });
 
+app.get('/api/notebooks/:id/historico', autenticarToken, apenasAdmin, async (req, res) => {
+    try {
+        const notebookId = parseInt(req.params.id);
+        
+        // Busca os dados do notebook
+        const noteQuery = await db.query("SELECT * FROM notebooks WHERE id = $1", [notebookId]);
+        if (noteQuery.rows.length === 0) return res.status(404).json({ message: 'Notebook não encontrado.' });
+        const notebook = noteQuery.rows[0];
+
+        // Busca todo o histórico de empréstimos DESSA máquina, trazendo junto o nome do aluno
+        const empQuery = await db.query(`
+            SELECT e.*, u.nome as nome_aluno, u.matricula 
+            FROM emprestimos e 
+            JOIN usuarios u ON e.usuario_id = u.id 
+            WHERE e.notebook_id = $1 
+            ORDER BY e.data_emprestimo DESC
+        `, [notebookId]);
+        
+        const historico = empQuery.rows;
+        const ativo = historico.find(emp => emp.status === 'ativo');
+
+        res.status(200).json({ notebook, ativo, historico });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao carregar histórico do notebook.' });
+    }
+});
+
 app.put('/notebooks/:id', autenticarToken, apenasAdmin, async (req, res) => {
     try {
         const notebookId = parseInt(req.params.id);
