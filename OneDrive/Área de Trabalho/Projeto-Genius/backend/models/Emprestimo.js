@@ -85,11 +85,12 @@ class Emprestimo {
      * @returns {Promise<Array<object>>}
      */
     static async findAllPopulado(status) {
+        // CORREÇÃO: Adicionado o u.telefone AS usuario_telefone na busca
         let query = `
             SELECT 
                 e.id, e.status, e.data_emprestimo, e.data_devolucao_prevista, 
                 e.data_devolucao_real, e.observacoes_emprestimo, e.observacoes_devolucao, e.acessorios,
-                u.nome AS usuario_nome, u.cpf AS usuario_cpf,
+                u.nome AS usuario_nome, u.cpf AS usuario_cpf, u.telefone AS usuario_telefone,
                 n.tombamento AS notebook_tombamento
             FROM emprestimos e
             LEFT JOIN usuarios u ON e.usuario_id = u.id
@@ -119,13 +120,14 @@ class Emprestimo {
                 dataEmprestimo: row.data_emprestimo,
                 dataDevolucaoPrevista: row.data_devolucao_prevista,
                 dataDevolucaoReal: row.data_devolucao_real,
-                observacoes: row.observacoes_emprestimo, // Nome antigo
+                observacoes: row.observacoes_emprestimo, 
                 observacoesDevolucao: row.observacoes_devolucao,
                 // Converte a string "fonte,mouse" de volta para array ['fonte', 'mouse']
                 acessorios: row.acessorios ? row.acessorios.split(',') : [],
                 usuario: {
                     nome: row.usuario_nome || 'Usuário Deletado',
-                    cpf: row.usuario_cpf || 'N/A'
+                    cpf: row.usuario_cpf || 'N/A',
+                    telefone: row.usuario_telefone || '' // CORREÇÃO: Enviando o telefone para a tela
                 },
                 notebook: {
                     tombamento: row.notebook_tombamento || 'Notebook Deletado'
@@ -144,7 +146,6 @@ class Emprestimo {
      * @returns {Promise<object>} - O empréstimo atualizado.
      */
     static async encerrar(id, observacoesDevolucao) {
-        // CORRIGIDO: Forçando o fuso horário correto (Brasil)
         const query = `
             UPDATE emprestimos 
             SET status = 'encerrado', 
@@ -188,7 +189,6 @@ class Emprestimo {
      * @returns {Promise<Array<object>>}
      */
     static async getAtividadeSemana() {
-        // CORRIGIDO: Garante que os dias são contados a partir da data de hoje no fuso BR.
         const query = `
             SELECT 
                 EXTRACT(ISODOW FROM data_emprestimo) AS dia_semana, 

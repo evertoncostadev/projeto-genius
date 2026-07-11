@@ -5,12 +5,12 @@
 
 <div class="filter-bar">
     <div class="filter-group">
-        <label for="filtro-usuario">Filtrar por Usuário (Nome ou CPF):</label>
+        <label for="filtro-usuario">Filtrar por Usuário:</label>
         <input type="text" id="filtro-usuario" placeholder="Digite o nome ou CPF...">
     </div>
     
     <div class="filter-group">
-        <label for="filtro-notebook">Filtrar por Notebook (Tombamento ou N/S):</label>
+        <label for="filtro-notebook">Filtrar por Notebook:</label>
         <input type="text" id="filtro-notebook" placeholder="Digite o tombamento ou N/S...">
     </div>
     
@@ -23,28 +23,16 @@
         </select>
     </div>
 
-    <div class="filter-group" id="grupo-filtro-data-enc" style="display: none;">
-        <label>Data de Devolução (Real):</label>
-        <div style="display: flex; gap: 5px;">
-            <input type="text" id="filtro-dia-enc" placeholder="Dia" maxlength="2" style="width: 50px; text-align: center;">
-            <select id="filtro-mes-enc" style="flex: 1;">
-                <option value="todos">Mês</option>
-                <option value="01">Jan</option>
-                <option value="02">Fev</option>
-                <option value="03">Mar</option>
-                <option value="04">Abr</option>
-                <option value="05">Mai</option>
-                <option value="06">Jun</option>
-                <option value="07">Jul</option>
-                <option value="08">Ago</option>
-                <option value="09">Set</option>
-                <option value="10">Out</option>
-                <option value="11">Nov</option>
-                <option value="12">Dez</option>
-            </select>
-            <input type="text" id="filtro-ano-enc" placeholder="Ano" maxlength="4" style="width: 70px; text-align: center;">
-        </div>
+    <div class="filter-group" id="grupo-filtro-data-enc" style="display: none; flex-direction: row; gap: 10px;">
+    <div style="flex: 1;">
+        <label for="filtro-data-inicio">De:</label>
+        <input type="date" id="filtro-data-inicio">
     </div>
+    <div style="flex: 1;">
+        <label for="filtro-data-fim">Até:</label>
+        <input type="date" id="filtro-data-fim">
+    </div>
+</div>
 
     <div class="filter-group" id="grupo-filtro-atraso-enc" style="display: none;">
         <label for="filtro-condicao-enc">Condição de Entrega:</label>

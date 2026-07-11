@@ -10,7 +10,6 @@
     margin-bottom: 30px;
 }
 
-
 .loan-list-container.grid-view-encerrado {
     display: grid;
     grid-template-columns: repeat(2, 1fr); 
@@ -23,19 +22,28 @@
     }
 }
 
-
+/* ======================================= */
+/* ESTRUTURA DO CARD (Agora com Sanfona)   */
+/* ======================================= */
 .loan-card {
     background-color: #2D3748; 
     color: white; 
-    padding: 20px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start; 
-    gap: 20px;
+    flex-direction: column; 
     border: 1px solid #2D3748; 
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease, opacity 0.3s ease;
+    
+    position: relative; 
+    cursor: pointer; 
+    overflow: hidden; 
+}
+
+/* Mantém o padding antigo apenas para os cards encerrados (que não tem sanfona) */
+.loan-card.encerrado {
+    padding: 20px; 
+    cursor: default; 
 }
 
 .loan-card:hover {
@@ -43,54 +51,31 @@
     box-shadow: 0 6px 14px rgba(45, 55, 72, 0.3);
 }
 
-.loan-info {
-    flex-grow: 1; 
-    display: flex;
-    flex-direction: column;
-    gap: 10px; 
+.loan-card.encerrado:hover {
+    transform: none; 
+    box-shadow: none; 
 }
 
-.loan-info .user-info,
-.loan-info .notebook-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1rem;
-    font-weight: 600;
+/* --- TAG FLUANTE (ATRASADO / EM DIA) --- */
+.status-badge-floating {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    letter-spacing: 1px;
 }
 
-.loan-info .user-info .fas,
-.loan-info .notebook-info .fas {
-    color: #90CAF9; 
-    width: 20px; 
-    text-align: center;
-}
+.status-badge-floating.atrasado { background-color: #e74c3c; }
+.status-badge-floating.em-dia { background-color: #2ecc71; }
 
-.loan-info .dates-info {
-    font-size: 0.9rem;
-    color: #CFD8DC; 
-    flex-wrap: wrap; 
-    padding-left: 30px; 
-}
-
-.loan-info .dates-info strong {
-    color: white; 
-}
-
-.loan-info .obs-info {
-    margin-top: 10px;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    border-top: 1px solid rgba(255, 255, 255, 0.1); 
-    padding-top: 10px;
-    color: #CFD8DC; 
-    padding-left: 30px; 
-}
-
-.loan-info .obs-info strong {
-    color: white; 
-}
-
+/* Tag antiga para os encerrados */
 .status-badge {
     padding: 3px 8px;
     border-radius: 12px;
@@ -101,66 +86,147 @@
     color: #fff;
     text-transform: uppercase;
 }
+.status-badge.atrasado { background-color: #e74c3c; }
 
-.status-badge.atrasado {
-    background-color: #e74c3c; 
-}
-
-.status-badge.em-dia {
-    background-color: #2ecc71; 
-}
-
-/* --- Ações --- */
-.loan-actions {
+/* --- HEADER VISÍVEL DO CARD --- */
+.loan-header {
+    width: 100%;
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.loan-info-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; 
+}
+
+.user-info, .notebook-info {
+    display: flex;
+    align-items: center;
     gap: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
 }
 
-.action-btn {
-    background: none;
-    border: none;
+.user-info .fas, .notebook-info .fas {
+    color: #90CAF9; 
+    width: 20px; 
+    text-align: center;
+}
+
+.dates-info {
+    font-size: 0.9rem;
+    color: #CFD8DC; 
+    flex-wrap: wrap; 
+    padding-left: 30px; 
+}
+
+.dates-info strong {
     color: white; 
-    font-size: 1.1rem; 
-    cursor: pointer;
-    transition: color 0.2s ease, transform 0.2s ease;
-    padding: 5px;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    opacity: 0.7;
-}
-.action-btn:hover {
-    opacity: 1;
-    transform: scale(1.1);
 }
 
-.action-btn.encerrar:hover { 
-    color: #2ecc71; 
+/* Ícone da Sanfona */
+.expand-icon {
+    color: #90CAF9;
+    font-size: 1.4rem;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.action-btn.delete:hover {
+.expand-icon i {
+    transition: transform 0.3s ease;
+}
+
+/* --- CONTEÚDO EXPANDIDO (Painel de Ações) --- */
+.loan-expanded-content {
+    width: 100%;
+    padding: 0 20px 20px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    margin-top: 5px;
+    padding-top: 20px;
+    display: flex;
+    justify-content: center;
+    animation: fadeInDown 0.3s ease forwards;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.expanded-actions {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    flex-wrap: wrap; 
+}
+
+/* Botões Grandes e Destacados */
+.btn-large {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    color: white;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.btn-large:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+.btn-large.zap { background-color: #25D366; } 
+.btn-large.encerrar { background-color: #3498db; } 
+.btn-large.delete { 
+    background-color: transparent; 
+    border: 1px solid #e74c3c; 
     color: #e74c3c; 
+    flex: 0.4; 
 }
+.btn-large.delete:hover { 
+    background-color: #e74c3c; 
+    color: white; 
+}
+
+/* Layout antigo para os encerrados */
+.loan-info { flex-grow: 1; display: flex; flex-direction: column; gap: 10px; }
+.loan-info .obs-info {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    padding-top: 10px;
+    color: #CFD8DC; 
+    padding-left: 30px; 
+}
+.loan-info .obs-info strong { color: white; }
 
 .loan-card.atrasado-card {
-    background-color: #5c2f34; 
+    background-color: #720611; 
     border: 1px solid #e74c3c;
 }
 .loan-card.atrasado-card:hover {
     box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
 }
 
-
-.loan-card.encerrado:hover {
-    transform: none; 
-    box-shadow: none; 
-}
-
+/* --- MODAL DE DEVOLUÇÃO (Encerrar) --- */
 .modal-backdrop {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     z-index: 2000;
     display: flex;
@@ -186,9 +252,7 @@
     margin-bottom: 25px;
     line-height: 1.5;
 }
-.modal-content .modal-info strong {
-    color: var(--text-color);
-}
+.modal-content .modal-info strong { color: var(--text-color); }
 .modal-content .modal-check-group {
     display: flex;
     flex-direction: column;
@@ -246,14 +310,68 @@
     background-color: #f0f0f0;
     color: #555;
 }
-.modal-btn.cancel:hover {
-    background-color: #e0e0e0;
-}
+.modal-btn.cancel:hover { background-color: #e0e0e0; }
 .modal-btn.confirm {
-    background-color: var(--color-disponivel); 
+    background-color: var(--color-disponivel, #3498db); 
     color: #ffffff;
 }
 .modal-btn.confirm:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+/* ======================================= */
+/* ESTILIZAÇÃO DOS FILTROS DE DATA         */
+/* ======================================= */
+
+#grupo-filtro-data-enc {
+    flex: 2; /* Informa que este grupo precisa de mais espaço que os outros */
+    min-width: 280px; /* Impede os campos de se esmagarem em telas menores */
+    display: flex;
+    gap: 10px;
+}
+
+#grupo-filtro-data-enc > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Faz o "De" e "Até" dividirem o espaço 50/50 */
+    width: 100%;
+}
+
+#grupo-filtro-data-enc label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+#grupo-filtro-data-enc input[type="date"] {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    font-family: 'Poppins', sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    color: #555;
+    height: 42px; /* Altura exata para alinhar com os outros campos e o botão */
+    box-sizing: border-box; /* Garante que o padding não estique o elemento para fora */
+    transition: all 0.2s ease;
+}
+
+#grupo-filtro-data-enc input[type="date"]:focus {
+    outline: none;
+    border-color: #3498db;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.2s;
+}
+
+::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }

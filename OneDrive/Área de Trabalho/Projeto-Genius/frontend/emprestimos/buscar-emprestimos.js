@@ -12,7 +12,6 @@ let paginaAtualEmp = 1;
 let itensPorPaginaEmp = 10; 
 let paginationContainer;
 
-// CORREÇÃO: Função para evitar injeção de script (XSS)
 function escaparHTML(str) {
     if (!str) return '';
     return String(str).replace(/[&<>'"]/g, match => ({
@@ -38,7 +37,6 @@ function renderizarEmprestimos(emprestimos) {
 
         const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-        // Escapando dados antes de injetar
         const nomeSeguro = escaparHTML(emp.usuario.nome);
         const cpfSeguro = escaparHTML(emp.usuario.cpf);
         const tombamentoSeguro = escaparHTML(emp.notebook.tombamento);
@@ -54,30 +52,44 @@ function renderizarEmprestimos(emprestimos) {
                 card.classList.add('atrasado-card'); 
             }
 
-            const badgeHTML = estaAtrasado ? '<span class="status-badge atrasado">ATRASADO</span>' : '<span class="status-badge em-dia">Em Dia</span>';
+            const badgeHTML = estaAtrasado ? '<span class="status-badge-floating atrasado">ATRASADO</span>' : '<span class="status-badge-floating em-dia">EM DIA</span>';
+
+            const telefoneNumerico = emp.usuario.telefone ? emp.usuario.telefone.replace(/\D/g, '') : '';
+            const primeiroNome = nomeSeguro.split(' ')[0];
 
             card.innerHTML = `
-                <div class="loan-info">
-                    <div class="user-info">
-                        <i class="fas fa-user"></i>
-                        <span>${nomeSeguro} (CPF: ${cpfSeguro})</span>
+                ${badgeHTML}
+                <div class="loan-header">
+                    <div class="loan-info-summary">
+                        <div class="user-info">
+                            <i class="fas fa-user"></i>
+                            <span>${nomeSeguro} (CPF: ${cpfSeguro})</span>
+                        </div>
+                        <div class="notebook-info">
+                            <i class="fas fa-laptop"></i>
+                            <span>${tombamentoSeguro}</span>
+                        </div>
+                        <div class="dates-info">
+                            <strong>Emprestado em:</strong> ${dataEmp} | <strong>Devolução Prevista:</strong> ${dataDev}
+                        </div>
                     </div>
-                    <div class="notebook-info">
-                        <i class="fas fa-laptop"></i>
-                        <span>${tombamentoSeguro}</span>
-                    </div>
-                    <div class="dates-info">
-                        <strong>Emprestado em:</strong> ${dataEmp} | <strong>Devolução Prevista:</strong> ${dataDev}
-                        ${badgeHTML}
+                    <div class="expand-icon">
+                        <i class="fas fa-chevron-down"></i>
                     </div>
                 </div>
-                <div class="loan-actions">
-                    <button class="action-btn encerrar" title="Dar Baixa (Encerrar)" data-action="encerrar">
-                        <i class="fas fa-check"></i>
-                    </button>
-                    <button class="action-btn delete" title="Excluir Empréstimo" data-action="delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                
+                <div class="loan-expanded-content" style="display: none;">
+                    <div class="expanded-actions">
+                        <button class="btn-large zap" data-action="whatsapp" data-tel="${telefoneNumerico}" data-nome="${primeiroNome}" data-tomb="${tombamentoSeguro}">
+                            <i class="fab fa-whatsapp"></i> Chamar no WhatsApp
+                        </button>
+                        <button class="btn-large encerrar" title="Dar Baixa (Encerrar)" data-action="encerrar">
+                            <i class="fas fa-check-circle"></i> Concluir Devolução
+                        </button>
+                        <button class="btn-large delete" title="Excluir Empréstimo do Sistema" data-action="delete">
+                            <i class="fas fa-trash-alt"></i> Deletar
+                        </button>
+                    </div>
                 </div>
             `;
 
@@ -140,39 +152,36 @@ async function buscarEmprestimos() {
     const grupoStatus = document.getElementById('grupo-filtro-status');
     const grupoDataEnc = document.getElementById('grupo-filtro-data-enc');
     const grupoAtrasoEnc = document.getElementById('grupo-filtro-atraso-enc');
+    const btnBaixarPdf = document.getElementById('btn-baixar-relatorio');
 
     if (statusDaPagina === 'encerrado') {
         itensPorPaginaEmp = 6; 
         if (loanListContainer) loanListContainer.classList.add('grid-view-encerrado'); 
-        if (grupoStatus) grupoStatus.style.display = 'none'; // Esconde filtro de status (ativos)
-        if (grupoDataEnc) grupoDataEnc.style.display = 'flex'; // Mostra filtro de data
-        if (grupoAtrasoEnc) grupoAtrasoEnc.style.display = 'flex'; // Mostra filtro de atraso
+        if (grupoStatus) grupoStatus.style.display = 'none'; 
+        if (grupoDataEnc) grupoDataEnc.style.display = 'flex'; 
+        if (grupoAtrasoEnc) grupoAtrasoEnc.style.display = 'flex'; 
+        if (btnBaixarPdf) btnBaixarPdf.style.display = 'flex'; 
 
-        // ==========================================================
-        // LÓGICA DE AUTO-PREENCHER COM A DATA DE HOJE
-        // ==========================================================
+        // AUTO-PREENCHIMENTO: Primeiro dia do mês ATÉ Hoje
         const hoje = new Date();
-        const diaInput = document.getElementById('filtro-dia-enc');
-        const mesInput = document.getElementById('filtro-mes-enc');
-        const anoInput = document.getElementById('filtro-ano-enc');
+        const inputInicio = document.getElementById('filtro-data-inicio');
+        const inputFim = document.getElementById('filtro-data-fim');
 
-        if (diaInput && !diaInput.value) {
-            diaInput.value = String(hoje.getDate()).padStart(2, '0');
+        if (inputInicio && !inputInicio.value) {
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            inputInicio.value = primeiroDia.toISOString().split('T')[0];
         }
-        if (mesInput && mesInput.value === 'todos') {
-            mesInput.value = String(hoje.getMonth() + 1).padStart(2, '0');
+        if (inputFim && !inputFim.value) {
+            inputFim.value = hoje.toISOString().split('T')[0];
         }
-        if (anoInput && !anoInput.value) {
-            anoInput.value = String(hoje.getFullYear());
-        }
-        // ==========================================================
 
     } else {
         itensPorPaginaEmp = 10; 
         if (loanListContainer) loanListContainer.classList.remove('grid-view-encerrado');
-        if (grupoStatus) grupoStatus.style.display = 'flex'; // Mostra filtro de status
-        if (grupoDataEnc) grupoDataEnc.style.display = 'none'; // Esconde
-        if (grupoAtrasoEnc) grupoAtrasoEnc.style.display = 'none'; // Esconde
+        if (grupoStatus) grupoStatus.style.display = 'flex'; 
+        if (grupoDataEnc) grupoDataEnc.style.display = 'none'; 
+        if (grupoAtrasoEnc) grupoAtrasoEnc.style.display = 'none'; 
+        if (btnBaixarPdf) btnBaixarPdf.style.display = 'none'; 
     }
 
     if (tituloPagina) {
@@ -310,24 +319,66 @@ function adicionarListenersAcoesEmprestimo() {
     
     loanListContainer = document.querySelector('.loan-list-container');
     if (loanListContainer) {
+        
+        const clone = loanListContainer.cloneNode(true);
+        loanListContainer.parentNode.replaceChild(clone, loanListContainer);
+        loanListContainer = clone;
+
         loanListContainer.addEventListener('click', async (e) => {
-            const actionButton = e.target.closest('.action-btn');
-            if (!actionButton) return;
+            const card = e.target.closest('.loan-card');
+            if (!card) return;
+
+            if (card.classList.contains('encerrado')) return;
+
+            const actionButton = e.target.closest('.btn-large, .action-btn');
+
+            if (!actionButton) {
+                const expandedContent = card.querySelector('.loan-expanded-content');
+                const icon = card.querySelector('.expand-icon i');
+                
+                if (expandedContent) {
+                    const isHidden = expandedContent.style.display === 'none';
+                    
+                    document.querySelectorAll('.loan-expanded-content').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('.expand-icon i').forEach(el => { 
+                        el.classList.remove('fa-chevron-up'); 
+                        el.classList.add('fa-chevron-down'); 
+                    });
+                    
+                    if (isHidden) {
+                        expandedContent.style.display = 'flex';
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    }
+                }
+                return;
+            }
 
             if (typeof showCustomConfirm !== 'function') {
-                console.error('showCustomConfirm() não foi encontrada. Verifique o dashboard.js');
                 showAlert('Erro Crítico', 'A função de confirmação não foi carregada.', 'error');
                 return;
             }
 
-            const card = actionButton.closest('.loan-card');
             const emprestimoId = card.dataset.id;
             const userName = card.querySelector('.user-info span').textContent.split(' (')[0];
             const notebookTombamento = card.querySelector('.notebook-info span').textContent.split(' (')[0];
             const action = actionButton.dataset.action;
             const token = localStorage.getItem('token'); 
 
-            if (action === 'encerrar') {
+            if (action === 'whatsapp') {
+                const tel = actionButton.dataset.tel;
+                const nome = actionButton.dataset.nome;
+                const tomb = actionButton.dataset.tomb;
+                
+                if (!tel || tel === 'undefined' || tel.trim() === '') {
+                    showAlert('Sem Telefone', 'O número de telefone deste aluno não carregou ou não está cadastrado.', 'warning');
+                    return; 
+                }
+
+                const msg = `Olá ${nome}, aqui é da coordenação do programa Limites do Visível. Estou entrando em contato referente ao empréstimo do notebook ${tomb}.`;
+                window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`, '_blank');
+            }
+            else if (action === 'encerrar') {
                 encerrarEmprestimo(card, emprestimoId, userName, notebookTombamento);
             } 
             else if (action === 'delete') {
@@ -345,10 +396,8 @@ function adicionarListenersAcoesEmprestimo() {
                         if (!response.ok) throw new Error(result.message);
 
                         showAlert('Sucesso!', result.message, 'success'); 
-                        
                         todosEmprestimos = todosEmprestimos.filter(emp => emp.id !== parseInt(emprestimoId));
                         aplicarFiltrosEmprestimo(); 
-
                     } catch (error) {
                         showAlert('Erro ao Excluir', error.message, 'error');
                     }
@@ -364,10 +413,9 @@ function aplicarFiltrosEmprestimo() {
     const filtroNotebook = document.getElementById('filtro-notebook');
     const filtroStatusEl = document.getElementById('filtro-status'); 
 
-    // Novos campos
-    const filtroDiaEnc = document.getElementById('filtro-dia-enc') ? document.getElementById('filtro-dia-enc').value : '';
-    const filtroMesEnc = document.getElementById('filtro-mes-enc') ? document.getElementById('filtro-mes-enc').value : 'todos';
-    const filtroAnoEnc = document.getElementById('filtro-ano-enc') ? document.getElementById('filtro-ano-enc').value : '';
+    // Novos Elementos de Data
+    const inputInicio = document.getElementById('filtro-data-inicio') ? document.getElementById('filtro-data-inicio').value : '';
+    const inputFim = document.getElementById('filtro-data-fim') ? document.getElementById('filtro-data-fim').value : '';
     const filtroCondicaoEnc = document.getElementById('filtro-condicao-enc') ? document.getElementById('filtro-condicao-enc').value : 'todos';
 
     const termoUsuario = filtroUsuario ? filtroUsuario.value.toLowerCase() : '';
@@ -397,13 +445,22 @@ function aplicarFiltrosEmprestimo() {
         else if (statusDaPagina === 'encerrado') {
             const dataDevReal = new Date(emp.dataDevolucaoReal);
             const dataDevPrevista = new Date(emp.dataDevolucaoPrevista);
+            
+            // Zeramos a hora para a comparação de data funcionar perfeitamente
+            const dataDevApenasDia = new Date(dataDevReal.getFullYear(), dataDevReal.getMonth(), dataDevReal.getDate());
 
-            // Filtro de Data
-            if (filtroAnoEnc && filtroAnoEnc.length === 4 && dataDevReal.getFullYear().toString() !== filtroAnoEnc) passaDataEnc = false;
-            if (filtroMesEnc && filtroMesEnc !== 'todos' && (dataDevReal.getMonth() + 1).toString().padStart(2, '0') !== filtroMesEnc) passaDataEnc = false;
-            if (filtroDiaEnc && dataDevReal.getDate().toString().padStart(2, '0') !== filtroDiaEnc.padStart(2, '0')) passaDataEnc = false;
+            // Lógica do filtro "DE" e "ATÉ"
+            if (inputInicio) {
+                const [ano, mes, dia] = inputInicio.split('-');
+                const dataInicio = new Date(ano, mes - 1, dia);
+                if (dataDevApenasDia < dataInicio) passaDataEnc = false;
+            }
+            if (inputFim) {
+                const [ano, mes, dia] = inputFim.split('-');
+                const dataFim = new Date(ano, mes - 1, dia);
+                if (dataDevApenasDia > dataFim) passaDataEnc = false;
+            }
 
-            // Filtro de Atraso
             if (filtroCondicaoEnc && filtroCondicaoEnc !== 'todos') {
                 const devolvidoComAtraso = dataDevReal > dataDevPrevista;
                 if (filtroCondicaoEnc === 'com_atraso' && !devolvidoComAtraso) passaCondicaoEnc = false;
@@ -484,10 +541,8 @@ function adicionarListenersFiltroEmprestimo() {
     const btnBuscar = document.getElementById('btn-buscar-emprestimo');
     const filtroStatus = document.getElementById('filtro-status'); 
 
-    // Novos campos
-    const filtroDiaEnc = document.getElementById('filtro-dia-enc');
-    const filtroMesEnc = document.getElementById('filtro-mes-enc');
-    const filtroAnoEnc = document.getElementById('filtro-ano-enc');
+    const filtroDataInicio = document.getElementById('filtro-data-inicio');
+    const filtroDataFim = document.getElementById('filtro-data-fim');
     const filtroCondicaoEnc = document.getElementById('filtro-condicao-enc');
 
     if (btnBuscar) {
@@ -504,12 +559,109 @@ function adicionarListenersFiltroEmprestimo() {
     if (filtroUsuario) filtroUsuario.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); aplicarFiltrosEmprestimo(); }});
     if (filtroNotebook) filtroNotebook.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); aplicarFiltrosEmprestimo(); }});
 
-    // Listeners dos novos filtros
-    if (filtroDiaEnc) filtroDiaEnc.addEventListener('input', debouncedAplicarFiltros);
-    if (filtroAnoEnc) filtroAnoEnc.addEventListener('input', debouncedAplicarFiltros);
-    if (filtroMesEnc) filtroMesEnc.addEventListener('change', aplicarFiltrosEmprestimo);
+    if (filtroDataInicio) filtroDataInicio.addEventListener('input', debouncedAplicarFiltros);
+    if (filtroDataFim) filtroDataFim.addEventListener('input', debouncedAplicarFiltros);
     if (filtroCondicaoEnc) filtroCondicaoEnc.addEventListener('change', aplicarFiltrosEmprestimo);
 }
+
+// ==========================================
+// EXPORTAÇÃO DE PDF (Histórico Completo)
+// ==========================================
+window.baixarRelatorioEncerrados = function() {
+    if (emprestimosFiltrados.length === 0) {
+        const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
+        showAlert('Aviso', 'Não há empréstimos para exportar com estes filtros.', 'warning');
+        return;
+    }
+
+    const btn = document.getElementById('btn-baixar-relatorio');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+    btn.disabled = true;
+
+    // Configura o título do PDF baseado nas datas escolhidas
+    const dataHoje = new Date().toLocaleDateString('pt-BR');
+    let periodoTexto = 'Período Completo';
+    const inputInicio = document.getElementById('filtro-data-inicio');
+    const inputFim = document.getElementById('filtro-data-fim');
+    
+    if(inputInicio && inputFim && inputInicio.value && inputFim.value) {
+        const dI = inputInicio.value.split('-').reverse().join('/');
+        const dF = inputFim.value.split('-').reverse().join('/');
+        periodoTexto = `Período Filtrado: ${dI} a ${dF}`;
+    }
+
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px'; 
+    tempContainer.style.top = '0';
+    tempContainer.style.width = '1100px'; 
+    tempContainer.style.backgroundColor = '#1e293b'; 
+    tempContainer.style.color = '#ffffff';
+    tempContainer.style.padding = '30px';
+    tempContainer.style.fontFamily = "'Poppins', sans-serif, Arial";
+    
+    tempContainer.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #334155; padding-bottom: 15px;">
+            <h1 style="margin: 0; color: #90CAF9;">Histórico de Empréstimos Encerrados</h1>
+            <p style="margin: 5px 0; color: #94a3b8;">Projeto Limites do Visível | ${periodoTexto}</p>
+            <p style="margin: 0; color: #cbd5e1; font-size: 0.9rem;">Total de registros impressos: ${emprestimosFiltrados.length}</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;" id="pdf-grid"></div>
+    `;
+
+    const grid = tempContainer.querySelector('#pdf-grid');
+
+    emprestimosFiltrados.forEach(emp => {
+        const card = document.createElement('div');
+        card.style.backgroundColor = '#2D3748';
+        card.style.border = '1px solid #475569';
+        card.style.borderRadius = '8px';
+        card.style.padding = '15px';
+        
+        const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const dataDev = emp.dataDevolucaoReal ? new Date(emp.dataDevolucaoReal).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+        const dataDevPrevista = new Date(emp.dataDevolucaoPrevista);
+        const dataDevolucaoRealDate = new Date(emp.dataDevolucaoReal);
+        
+        const foiAtrasado = emp.dataDevolucaoReal && dataDevolucaoRealDate > dataDevPrevista;
+        const badge = foiAtrasado ? '<span style="background:#e74c3c; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;">COM ATRASO</span>' : '<span style="background:#2ecc71; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:bold; margin-left:8px;">NO PRAZO</span>';
+
+        card.innerHTML = `
+            <div style="margin-bottom: 8px; font-size: 1rem;"><strong>👤 Aluno:</strong> ${escaparHTML(emp.usuario.nome)} <span style="font-size:0.85rem">(CPF: ${escaparHTML(emp.usuario.cpf)})</span></div>
+            <div style="margin-bottom: 10px; font-size: 1rem;"><strong>💻 Notebook:</strong> ${escaparHTML(emp.notebook.tombamento)}</div>
+            <div style="font-size: 0.85rem; color: #cbd5e1; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px;">
+                <strong>Retirado em:</strong> ${dataEmp} <br>
+                <strong>Devolvido em:</strong> ${dataDev} ${badge}
+            </div>
+            <div style="margin-top: 10px; font-size: 0.8rem; color: #94a3b8;">
+                <strong>Obs Devolução:</strong> ${escaparHTML(emp.observacoesDevolucao || 'Nenhuma observação cadastrada.')}
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    document.body.appendChild(tempContainer); 
+
+    const opcoes = {
+        margin:       10,
+        filename:     `Relatorio_Historico_Polo_${dataHoje.replace(/\//g, '-')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opcoes).from(tempContainer).save().then(() => {
+        document.body.removeChild(tempContainer); 
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    }).catch(err => {
+        console.error(err);
+        document.body.removeChild(tempContainer);
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    });
+};
 
 setTimeout(buscarEmprestimos, 0);
 })();
