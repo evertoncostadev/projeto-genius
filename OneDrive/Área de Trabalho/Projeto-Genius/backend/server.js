@@ -172,8 +172,9 @@ app.get('/api/usuarios/:id/perfil', autenticarToken, apenasAdmin, async (req, re
         const usuario = userQuery.rows[0];
         delete usuario.senha; 
 
+        // CORREÇÃO: Adicionado o n.numero_serie na busca do banco de dados!
         const empQuery = await db.query(`
-            SELECT e.*, n.tombamento 
+            SELECT e.*, n.tombamento, n.numero_serie 
             FROM emprestimos e 
             JOIN notebooks n ON e.notebook_id = n.id 
             WHERE e.usuario_id = $1 
@@ -190,7 +191,6 @@ app.get('/api/usuarios/:id/perfil', autenticarToken, apenasAdmin, async (req, re
     }
 });
 
-// Verifica Duplicidade de CPF, E-mail e MATRÍCULA
 app.post('/api/verificar-duplicidade', async (req, res) => {
     try {
         const { cpf, email, matricula } = req.body;
@@ -239,7 +239,6 @@ app.post('/api/cadastro-publico', upload.fields([
 
         if (!senha || senha.length < 6) return res.status(400).json({ message: 'A senha deve ter no mínimo 6 caracteres.' });
 
-        // Validação Múltipla de Conflitos: CPF, E-mail e Matrícula
         const existe = await db.query("SELECT id, email, cpf, matricula FROM usuarios WHERE email = $1 OR cpf = $2 OR matricula = $3", [email, cpf, matricula]);
         if (existe.rows.length > 0) {
             const conflito = existe.rows[0];
@@ -669,7 +668,6 @@ app.delete('/emprestimos/:id', autenticarToken, apenasAdmin, async (req, res) =>
 // --- ROTAS DE ESTATÍSTICAS E LOGIN ---
 // =============================================
 
-// Rota 1: Estatísticas do Patrimônio (Para os 4 cards do topo)
 app.get('/api/estatisticas', autenticarToken, apenasAdmin, async (req, res) => {
     try {
         const notebooks = await Notebook.findAll(); 
@@ -692,16 +690,10 @@ app.get('/api/estatisticas', autenticarToken, apenasAdmin, async (req, res) => {
     }
 });
 
-// Rota 2: Dashboard Operacional (Avisos e Próximas Devoluções)
 app.get('/api/dashboard-operacional', autenticarToken, apenasAdmin, async (req, res) => {
     try {
-        // 1. Cadastros Pendentes
         const pendentesRes = await db.query("SELECT COUNT(*) FROM usuarios WHERE status_aprovacao = 'pendente'");
-        
-        // 2. Empréstimos Atrasados
         const atrasadosRes = await db.query("SELECT COUNT(*) FROM emprestimos WHERE status = 'ativo' AND data_devolucao_prevista < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')");
-        
-        // 3. Próximas Devoluções (Agora exibe todos os ativos, incluindo os atrasados)
         const proximasRes = await db.query(`
             SELECT e.id, e.data_devolucao_prevista, u.nome, n.tombamento,
                    (e.data_devolucao_prevista < (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')) AS is_atrasado
@@ -836,7 +828,6 @@ app.get('/criar-admin-mestre', async (req, res) => {
     } catch (err) { res.status(500).send(err.message); }
 });
 
-// Tratamento de erros globais (Ex: Multer rejeitando upload malicioso)
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError || err.message.includes('Formato de arquivo inválido')) {
         return res.status(400).json({ message: err.message });
@@ -865,7 +856,6 @@ cron.schedule('0 * * * *', async () => {
 
         for (const emp of atrasados.rows) {
             const usuario = { nome: emp.nome, email: emp.email };
-            
             const notebook = { tombamento: emp.tombamento };
             
             await EmailService.enviarCobrancaAtraso(usuario, notebook, emp);

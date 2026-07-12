@@ -11,6 +11,11 @@ let debounceTimerNote;
 
 let notebookAtualModal = null;
 let historicoAtualNoteModal = [];
+let historicoFiltradoNoteModal = [];
+
+// Variáveis para a paginação dentro do Modal
+let paginaAtualHistNote = 1;
+const itensPorPaginaHistNote = 5; // Quantidade de itens por página no histórico
 
 function escaparHTML(str) {
     if (!str) return '';
@@ -161,7 +166,6 @@ function adicionarListenersAcoesNote() {
     notebookListContainer = document.querySelector('.notebook-list-container');
     if (notebookListContainer) {
         
-        // Remove listeners antigos criando um clone
         const clone = notebookListContainer.cloneNode(true);
         notebookListContainer.parentNode.replaceChild(clone, notebookListContainer);
         notebookListContainer = clone;
@@ -174,7 +178,6 @@ function adicionarListenersAcoesNote() {
             const actionButton = e.target.closest('.action-btn');
             const token = localStorage.getItem('token');
 
-            // Clicar fora dos botões (na área da info) OU clicar em Editar abre o Modal
             if (!actionButton || actionButton.dataset.action === 'edit') {
                 abrirModalNotebook(notebookId);
                 return;
@@ -237,7 +240,6 @@ function preencherModalNotebook({ notebook, ativo, historico }) {
         alerta.style.display = 'block';
     } else { alerta.style.display = 'none'; }
 
-    // Preenche o formulário de edição
     document.getElementById('edit-note-id').value = notebook.id;
     document.getElementById('edit-note-tombamento').value = notebook.tombamento || '';
     document.getElementById('edit-note-serie').value = notebook.numero_serie || '';
@@ -245,13 +247,17 @@ function preencherModalNotebook({ notebook, ativo, historico }) {
 
     document.getElementById('btn-salvar-note').style.display = 'none';
     
-    // Reseta abas e filtros
-    document.querySelector('.tab-btn-note[data-target="tab-dados-note"]').click();
-    document.getElementById('filtro-dia-hist-note').value = 'todos';
-    document.getElementById('filtro-mes-hist-note').value = 'todos';
-    document.getElementById('filtro-ano-hist-note').value = 'todos';
+    const hoje = new Date();
+    const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+    
+    document.getElementById('filtro-usuario-hist').value = '';
+    document.getElementById('filtro-data-inicio-hist').value = primeiroDia.toISOString().split('T')[0];
+    document.getElementById('filtro-data-fim-hist').value = hoje.toISOString().split('T')[0];
 
-    renderizarHistoricoNote(historico);
+    document.querySelector('.tab-btn-note[data-target="tab-dados-note"]').click();
+
+    paginaAtualHistNote = 1; // Reseta a paginação ao abrir
+    filtrarHistoricoNoteLocal(); 
 }
 
 // Controle de Abas
@@ -307,27 +313,30 @@ formEdicaoNote.addEventListener('submit', async (e) => {
     }
 });
 
-// Renderização do Histórico e Filtros
-// Renderização do Histórico e Filtros
+// =============================================
+// FILTRO E PAGINAÇÃO DO HISTÓRICO (MODAL)
+// =============================================
 function renderizarHistoricoNote(lista) {
     const container = document.getElementById('lista-historico-note');
     container.innerHTML = '';
     if(lista.length === 0) {
-        container.innerHTML = '<p style="color:#666;">Nenhum empréstimo registrado com esta data.</p>'; return;
+        container.innerHTML = '<p style="color:#666; margin-top: 15px;">Nenhum empréstimo registrado para este período.</p>'; 
+        return;
     }
+    
+    // Sort para os mais recentes primeiro
     lista.sort((a, b) => b.id - a.id);
     const meses = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 
     lista.forEach(emp => {
         const dEmp = new Date(emp.data_emprestimo);
         const dReal = new Date(emp.data_devolucao_real);
-        const dPrev = new Date(emp.data_devolucao_prevista); // Puxando o prazo limite do banco
+        const dPrev = new Date(emp.data_devolucao_prevista); 
         
         const agora = new Date();
         if (dReal > agora) dReal.setHours(dReal.getHours() - 3);
         if (dEmp > agora) dEmp.setHours(dEmp.getHours() - 3);
 
-        // Lógica que calcula se houve atraso (com 15 min de tolerância)
         let dPrevTolerancia = new Date(dPrev.getTime());
         dPrevTolerancia.setMinutes(dPrevTolerancia.getMinutes() + 15);
         const noPrazo = dReal <= dPrevTolerancia;
@@ -339,14 +348,13 @@ function renderizarHistoricoNote(lista) {
         const dataEmpStr = dEmp.toLocaleDateString('pt-BR');
         const horaEmpStr = dEmp.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
         
-        const dataRealStr = dReal.toLocaleDateString('pt-BR');
-        const horaRealStr = dReal.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        const dataRealStr = emp.data_devolucao_real ? dReal.toLocaleDateString('pt-BR') : 'Ainda ativo';
+        const horaRealStr = emp.data_devolucao_real ? dReal.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}) : '';
 
         const dataPrevStr = dPrev.toLocaleDateString('pt-BR');
         const horaPrevStr = dPrev.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
-        // Define a cor da borda lateral do card dinamicamente
-        const corBorda = noPrazo ? '#22c55e' : '#ef4444';
+        const corBorda = (noPrazo || !emp.data_devolucao_real) ? '#22c55e' : '#ef4444';
 
         container.innerHTML += `
             <div class="hist-card" style="border-left: 5px solid ${corBorda};">
@@ -356,16 +364,16 @@ function renderizarHistoricoNote(lista) {
                     <span class="ano">${ano}</span>
                 </div>
                 <div class="hist-details">
-                    <h4 style="margin-bottom: 10px;">👤 ${escaparHTML(emp.nome_aluno)} <span style="font-size:0.8rem; font-weight:normal;">(Matrícula: ${escaparHTML(emp.matricula)})</span></h4>
+                    <h4 style="margin-bottom: 10px; color: #ffffff;">👤 ${escaparHTML(emp.nome_aluno)} <span style="font-size:0.8rem; font-weight:normal;">(Matrícula: ${escaparHTML(emp.matricula)})</span></h4>
                     
                     <div style="font-size: 0.9rem; color: #475569; margin-bottom: 10px;">
                         <p style="margin: 3px 0;" class="hist-info-line"><span class="status-dot dot-retirado"></span> <strong>Retirado em:</strong> ${dataEmpStr} às ${horaEmpStr}</p>
-                        <p style="margin: 3px 0;" class="hist-info-line"><span class="status-dot dot-devolvido"></span> <strong>Devolvido em:</strong> ${dataRealStr} às ${horaRealStr}</p>
+                        <p style="margin: 3px 0;" class="hist-info-line"><span class="status-dot dot-devolvido"></span> <strong>Devolvido em:</strong> ${emp.data_devolucao_real ? `${dataRealStr} às ${horaRealStr}` : 'Não devolvido'}</p>
                         <p style="font-size: 0.8rem; color: #94a3b8; margin: 3px 0;" class="hist-prazo"><em>Prazo limite: ${dataPrevStr} às ${horaPrevStr}</em></p>
                     </div>
 
-                    <p class="hist-status" style="font-size: 0.85rem; font-weight: bold; color: ${noPrazo?'#22c55e':'#ef4444'}; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 10px;">
-                        ${noPrazo ? '✔ Devolvido No Prazo' : '✖ Devolvido com Atraso'} | <span style="color:#94a3b8; font-weight:normal;" class="obs-text">Obs: ${escaparHTML(emp.observacoes_devolucao || 'Nenhuma')}</span>
+                    <p class="hist-status" style="font-size: 0.85rem; font-weight: bold; color: ${corBorda}; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 10px;">
+                        ${emp.data_devolucao_real ? (noPrazo ? '✔ Devolvido No Prazo' : '✖ Devolvido com Atraso') : '⏳ Em andamento'} | <span style="color:#94a3b8; font-weight:normal;" class="obs-text">Obs: ${escaparHTML(emp.observacoes_devolucao || 'Nenhuma')}</span>
                     </p>
                 </div>
             </div>
@@ -373,46 +381,203 @@ function renderizarHistoricoNote(lista) {
     });
 }
 
-function filtrarHistoricoNoteLocal() {
-    const diaFiltro = document.getElementById('filtro-dia-hist-note').value;
-    const mesFiltro = document.getElementById('filtro-mes-hist-note').value;
-    const anoFiltro = document.getElementById('filtro-ano-hist-note').value;
-
-    const filtrados = historicoAtualNoteModal.filter(emp => {
-        const dEmp = new Date(emp.data_emprestimo);
-        if (dEmp > new Date()) dEmp.setHours(dEmp.getHours() - 3);
-
-        const dia = String(dEmp.getDate()).padStart(2, '0');
-        const mes = String(dEmp.getMonth() + 1).padStart(2, '0');
-        const ano = String(dEmp.getFullYear());
-
-        return (diaFiltro === 'todos' || dia === diaFiltro) &&
-               (mesFiltro === 'todos' || mes === mesFiltro) &&
-               (anoFiltro === 'todos' || ano === anoFiltro);
-    });
-    renderizarHistoricoNote(filtrados);
+function atualizarPaginaHistNote() {
+    const startIndex = (paginaAtualHistNote - 1) * itensPorPaginaHistNote;
+    const endIndex = startIndex + itensPorPaginaHistNote;
+    const historicoDaPagina = historicoFiltradoNoteModal.slice(startIndex, endIndex);
+    
+    renderizarHistoricoNote(historicoDaPagina);
+    renderizarPaginacaoHistNote(historicoFiltradoNoteModal.length);
 }
 
-document.getElementById('filtro-dia-hist-note').addEventListener('change', filtrarHistoricoNoteLocal);
-document.getElementById('filtro-mes-hist-note').addEventListener('change', filtrarHistoricoNoteLocal);
-document.getElementById('filtro-ano-hist-note').addEventListener('change', filtrarHistoricoNoteLocal);
+function renderizarPaginacaoHistNote(totalItens) {
+    const paginationContainer = document.getElementById('pagination-historico-note');
+    if (!paginationContainer) return; 
 
-// Exportação PDF
+    paginationContainer.innerHTML = '';
+    const totalPaginas = Math.ceil(totalItens / itensPorPaginaHistNote);
+    if (totalPaginas <= 1) return; // Não desenha paginação se couber tudo em 1 tela
+
+    const prevButton = document.createElement('button');
+    prevButton.innerHTML = '&laquo;'; // Seta Esquerda <
+    prevButton.disabled = (paginaAtualHistNote === 1);
+    prevButton.style.padding = '8px 15px'; // Um pouco menor que o botão principal
+    prevButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (paginaAtualHistNote > 1) { paginaAtualHistNote--; atualizarPaginaHistNote(); }
+    });
+    paginationContainer.appendChild(prevButton);
+
+    for (let i = 1; i <= totalPaginas; i++) {
+        const pageLink = document.createElement('a');
+        pageLink.href = '#';
+        pageLink.textContent = i;
+        if (i === paginaAtualHistNote) pageLink.classList.add('active');
+        pageLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            paginaAtualHistNote = i;
+            atualizarPaginaHistNote();
+        });
+        paginationContainer.appendChild(pageLink);
+    }
+
+    const nextButton = document.createElement('button');
+    nextButton.innerHTML = '&raquo;'; // Seta Direita >
+    nextButton.disabled = (paginaAtualHistNote === totalPaginas);
+    nextButton.style.padding = '8px 15px';
+    nextButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (paginaAtualHistNote < totalPaginas) { paginaAtualHistNote++; atualizarPaginaHistNote(); }
+    });
+    paginationContainer.appendChild(nextButton);
+}
+
+function filtrarHistoricoNoteLocal() {
+    const termoUsuario = document.getElementById('filtro-usuario-hist').value.toLowerCase();
+    const dataInicio = document.getElementById('filtro-data-inicio-hist').value;
+    const dataFim = document.getElementById('filtro-data-fim-hist').value;
+
+    historicoFiltradoNoteModal = historicoAtualNoteModal.filter(emp => {
+        const matchUsuario = (emp.nome_aluno || '').toLowerCase().includes(termoUsuario) ||
+                             (emp.matricula || '').toLowerCase().includes(termoUsuario);
+        
+        let passaData = true;
+        const dReal = emp.data_devolucao_real ? new Date(emp.data_devolucao_real) : new Date(emp.data_emprestimo); 
+        const dApenasDia = new Date(dReal.getFullYear(), dReal.getMonth(), dReal.getDate());
+
+        if (dataInicio) {
+            const [ano, mes, dia] = dataInicio.split('-');
+            const dInicio = new Date(ano, mes - 1, dia);
+            if (dApenasDia < dInicio) passaData = false;
+        }
+        if (dataFim) {
+            const [ano, mes, dia] = dataFim.split('-');
+            const dFim = new Date(ano, mes - 1, dia);
+            if (dApenasDia > dFim) passaData = false;
+        }
+
+        return matchUsuario && passaData;
+    });
+    
+    paginaAtualHistNote = 1; // Reseta sempre para a página 1 ao filtrar
+    atualizarPaginaHistNote(); // Chama a função que corta a lista e cria os botões
+}
+
+// Adiciona os gatilhos dos novos campos
+document.getElementById('filtro-usuario-hist').addEventListener('input', filtrarHistoricoNoteLocal);
+document.getElementById('filtro-data-inicio-hist').addEventListener('change', filtrarHistoricoNoteLocal);
+document.getElementById('filtro-data-fim-hist').addEventListener('change', filtrarHistoricoNoteLocal);
+
+// Exportação PDF Dinâmica (HTML2PDF para Dados / AutoTable para Histórico)
 document.getElementById('btn-fechar-notebook').onclick = () => document.getElementById('modal-notebook').style.display = 'none';
 
 document.getElementById('btn-baixar-pdf-note').onclick = () => {
     const textoAtual = document.getElementById('texto-btn-pdf-note').innerText;
     const tombamento = document.getElementById('modal-tombamento-titulo').textContent.replace('Tombamento: ', '').trim();
+    const marcaModelo = document.getElementById('edit-note-modelo').value || 'Não Informado';
     
-    let elementoAlvo = textoAtual === 'Baixar Dados' ? document.getElementById('tab-dados-note') : document.getElementById('tab-historico-note');
-    let nomeArquivo = textoAtual === 'Baixar Dados' ? `Dados_${tombamento}_Genius.pdf` : `Historico_${tombamento}_Genius.pdf`;
+    // Aba 1: Print da tela
+    if (textoAtual === 'Baixar Dados') {
+        const elementoAlvo = document.getElementById('tab-dados-note');
+        const opcoes = {
+            margin: 10, filename: `Dados_${tombamento}_Genius.pdf`,
+            image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opcoes).from(elementoAlvo).save();
     
-    const opcoes = {
-        margin: 10, filename: nomeArquivo,
-        image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: textoAtual === 'Baixar Histórico' ? 'landscape' : 'portrait' }
-    };
-    html2pdf().set(opcoes).from(elementoAlvo).save();
+    // Aba 2: Tabela Corporativa (Ignora a paginação da tela e imprime TODOS os filtrados)
+    } else {
+        if (historicoFiltradoNoteModal.length === 0) {
+            const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
+            showAlert('Aviso', 'Não há histórico para exportar com estes filtros.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-baixar-pdf-note');
+        const textoOriginal = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+        btn.disabled = true;
+
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
+        let periodoTexto = 'Período Completo';
+        const inputInicio = document.getElementById('filtro-data-inicio-hist').value;
+        const inputFim = document.getElementById('filtro-data-fim-hist').value;
+        
+        if(inputInicio && inputFim) {
+            const dI = inputInicio.split('-').reverse().join('/');
+            const dF = inputFim.split('-').reverse().join('/');
+            periodoTexto = `${dI} a ${dF}`;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+
+        doc.setFontSize(18);
+        doc.setTextColor(44, 62, 80);
+        doc.text(`Histórico de Empréstimos - Notebook ${tombamento}`, 14, 20);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Modelo / Marca: ${marcaModelo} | Período: ${periodoTexto}`, 14, 28);
+        doc.text(`Gerado em: ${dataHoje} | Total de registros: ${historicoFiltradoNoteModal.length}`, 14, 33);
+
+        const cabecalho = [['Aluno / Matrícula', 'Retirada', 'Devolução', 'Status', 'Observações']];
+        
+        const linhas = historicoFiltradoNoteModal.map(emp => {
+            const dEmp = new Date(emp.data_emprestimo);
+            const dReal = emp.data_devolucao_real ? new Date(emp.data_devolucao_real) : null;
+            const dPrev = new Date(emp.data_devolucao_prevista);
+            
+            const dataEmpStr = dEmp.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+            const dataDev = dReal ? dReal.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Ainda em uso';
+            
+            let statusTexto = 'EM ANDAMENTO';
+            if (dReal) {
+                let dPrevTolerancia = new Date(dPrev.getTime());
+                dPrevTolerancia.setMinutes(dPrevTolerancia.getMinutes() + 15);
+                const noPrazo = dReal <= dPrevTolerancia;
+                statusTexto = noPrazo ? 'NO PRAZO' : 'COM ATRASO';
+            }
+
+            return [
+                `${emp.nome_aluno}\nMat: ${emp.matricula}`,
+                dataEmpStr,
+                dataDev,
+                statusTexto,
+                emp.observacoes_devolucao || 'Nenhuma.'
+            ];
+        });
+
+        doc.autoTable({
+            head: cabecalho,
+            body: linhas,
+            startY: 40, 
+            theme: 'grid', 
+            styles: { font: 'helvetica', fontSize: 9, cellPadding: 5, lineColor: [100, 116, 139], lineWidth: 0.3 },
+            headStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold', lineColor: [44, 62, 80], lineWidth: 0.3 },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            columnStyles: {
+                0: { cellWidth: 60 }, // Aluno
+                1: { cellWidth: 35 }, // Retirada
+                2: { cellWidth: 35 }, // Devolução
+                3: { cellWidth: 35, fontStyle: 'bold' }, // Status
+                4: { cellWidth: 'auto' } // Observações
+            },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.column.index === 3) {
+                    if (data.cell.raw === 'COM ATRASO') { data.cell.styles.textColor = [231, 76, 60]; } 
+                    else if (data.cell.raw === 'NO PRAZO') { data.cell.styles.textColor = [39, 174, 96]; }
+                    else { data.cell.styles.textColor = [52, 152, 219]; } // Em andamento (Azul)
+                }
+            }
+        });
+
+        doc.save(`Historico_${tombamento}_${dataHoje.replace(/\//g, '-')}.pdf`);
+
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    }
 };
 
 setTimeout(buscarNotebooks, 0);

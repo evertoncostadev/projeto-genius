@@ -7,8 +7,13 @@
     let usuariosFiltrados = [];
     let paginaAtual = 1;
     const itensPorPagina = 10;
+    
     let usuarioAtualModal = null;
     let historicoAtualModal = [];
+    
+    let historicoFiltradoModal = [];
+    let paginaAtualHistUser = 1;
+    const itensPorPaginaHistUser = 5;
 
     const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
     const showConfirm = typeof showCustomConfirm === 'function' ? showCustomConfirm : async (title, msg) => confirm(msg);
@@ -20,7 +25,6 @@
         }[match]));
     }
 
-    // ================= FUNÇÕES DE FEEDBACK VISUAL DE ERRO =================
     function mostrarErroVisual(campo, mensagem) {
         campo.classList.add('input-error');
         const grupo = campo.closest('.input-modal');
@@ -45,7 +49,6 @@
         }
     }
 
-    // Validador de CPF e formatadores
     function validarCPF(cpf) {
         cpf = cpf.replace(/\D/g, '');
         if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
@@ -70,7 +73,6 @@
         return v;
     }
 
-    // ================= RENDERIZAÇÃO DA LISTA E PAGINAÇÃO =================
     function renderizarUsuarios(usuariosParaRenderizar) {
         userListContainer = document.querySelector('.user-list-container');
         if (!userListContainer) return; 
@@ -152,7 +154,6 @@
         container.appendChild(nextButton);
     }
 
-    // ================= BUSCA E FILTROS PRINCIPAIS =================
     async function buscarUsuarios() {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -166,24 +167,40 @@
     }
 
     function aplicarFiltros() {
-        const tNome = document.getElementById('filtro-nome')?.value.toLowerCase() || '';
-        const tCpf = document.getElementById('filtro-cpf')?.value.replace(/\D/g, '') || '';
+        const termo = document.getElementById('filtro-busca')?.value.toLowerCase().trim() || '';
+        const numTermo = termo.replace(/\D/g, ''); 
+        
+        const tOrdem = document.getElementById('filtro-ordem')?.value || 'padrao';
         const tAprov = document.getElementById('filtro-aprovacao')?.value || 'todos';
         const tCurso = document.getElementById('filtro-curso')?.value || '';
         const tPeriodo = document.getElementById('filtro-periodo')?.value || '';
 
         usuariosFiltrados = todosUsuarios.filter(u => {
-            return (u.nome || '').toLowerCase().includes(tNome) &&
-                   (u.cpf || '').includes(tCpf) &&
+            const matchNome = (u.nome || '').toLowerCase().includes(termo);
+            const matchMatricula = (u.matricula || '').toLowerCase().includes(termo);
+            const matchCpf = numTermo.length > 0 && (u.cpf || '').includes(numTermo);
+            const matchGeral = (termo === '') || matchNome || matchMatricula || matchCpf;
+
+            return matchGeral &&
                    (tAprov === 'todos' || u.status_aprovacao === tAprov) &&
                    (tCurso === "" || u.curso === tCurso) &&
                    (tPeriodo === "" || u.periodo == tPeriodo);
         });
-        paginaAtual = 1; atualizarPagina(); 
+
+        // APLICAÇÃO DA ORDENAÇÃO
+        if (tOrdem === 'az') {
+            usuariosFiltrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+        } else if (tOrdem === 'za') {
+            usuariosFiltrados.sort((a, b) => (b.nome || '').localeCompare(a.nome || ''));
+        }
+        // Se for 'padrao', ele mantém a ordem original inteligente do backend
+
+        paginaAtual = 1; 
+        atualizarPagina(); 
     }
 
     function adicionarListenersBusca() {
-        ['filtro-nome', 'filtro-cpf', 'filtro-aprovacao', 'filtro-curso', 'filtro-periodo'].forEach(id => {
+        ['filtro-busca', 'filtro-ordem', 'filtro-aprovacao', 'filtro-curso', 'filtro-periodo'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', aplicarFiltros);
             document.getElementById(id)?.addEventListener('change', aplicarFiltros);
         });
@@ -242,7 +259,6 @@
         });
     }
 
-    // ================= MODAL PERFIL E EDIÇÃO =================
     async function abrirModalPerfil(id) {
         const token = localStorage.getItem('token');
         try {
@@ -253,7 +269,6 @@
             usuarioAtualModal = data.usuario;
             historicoAtualModal = data.historico;
             
-            // Remove erros visuais anteriores
             document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
             document.querySelectorAll('.error-msg').forEach(el => { el.classList.remove('visible'); el.textContent = ''; });
             
@@ -271,12 +286,27 @@
         if (ativo) {
             const devPrevista = new Date(ativo.data_devolucao_prevista);
             const agora = new Date();
-            const diffHoras = (devPrevista - agora) / (1000 * 60 * 60);
-            let textoTempo = diffHoras < 0 ? `<span style="color:red">ATRASADO (${Math.abs(Math.floor(diffHoras))}h)</span>` : `${Math.floor(diffHoras)}h restantes`;
+            const diffMs = devPrevista - agora;
             
-            alerta.innerHTML = `⚠️ Empréstimo Ativo: <strong>${escaparHTML(ativo.modelo)} (${escaparHTML(ativo.tombamento)})</strong>. Prazo: ${textoTempo}`;
+            const diffMinutosTotal = Math.floor(diffMs / (1000 * 60));
+            let textoTempo = '';
+            
+            if (diffMinutosTotal < 0) {
+                const atrasoMinutos = Math.abs(diffMinutosTotal);
+                const h = Math.floor(atrasoMinutos / 60);
+                const m = atrasoMinutos % 60;
+                textoTempo = `<span style="color:#e74c3c;">ATRASADO em ${h}h e ${m}m</span>`;
+            } else {
+                const h = Math.floor(diffMinutosTotal / 60);
+                const m = diffMinutosTotal % 60;
+                textoTempo = h > 0 ? `${h}h e ${m}m restantes` : `${m}m restantes`;
+            }
+            
+            alerta.innerHTML = `⚠️ Empréstimo Ativo: <strong>Tomb: ${escaparHTML(ativo.tombamento)} (N/S: ${escaparHTML(ativo.numero_serie || 'N/A')})</strong>. Prazo: ${textoTempo}`;
             alerta.style.display = 'block';
-        } else { alerta.style.display = 'none'; }
+        } else { 
+            alerta.style.display = 'none'; 
+        }
 
         document.getElementById('edit-id').value = usuario.id;
         document.getElementById('edit-nome').value = usuario.nome || '';
@@ -306,16 +336,16 @@
 
         document.getElementById('btn-salvar-alteracoes').style.display = 'none';
         
-        // Zera os filtros de data ao abrir o modal e reseta a visualização do botão de PDF
         document.querySelector('[data-target="tab-dados"]').click();
-        const inputDia = document.getElementById('filtro-dia-hist');
-        const inputMes = document.getElementById('filtro-mes-hist');
-        const inputAno = document.getElementById('filtro-ano-hist');
-        if(inputDia) inputDia.value = 'todos';
-        if(inputMes) inputMes.value = 'todos';
-        if(inputAno) inputAno.value = 'todos';
+        
+        const hoje = new Date();
+        const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        
+        document.getElementById('filtro-notebook-hist').value = '';
+        document.getElementById('filtro-data-inicio-hist').value = primeiroDia.toISOString().split('T')[0];
+        document.getElementById('filtro-data-fim-hist').value = hoje.toISOString().split('T')[0];
 
-        renderizarHistorico(historico);
+        filtrarHistoricoLocal();
 
         document.getElementById('btn-whatsapp-perfil').onclick = () => {
             window.open(`https://wa.me/55${usuario.telefone.replace(/\D/g,'')}?text=Olá ${usuario.nome.split(' ')[0]}, aqui é da coordenação do Projeto Genius.`, '_blank');
@@ -329,7 +359,6 @@
             btn.classList.add('active');
             document.getElementById(btn.dataset.target).style.display = 'block';
 
-            // NOVO: Altera o texto do botão de exportar PDF de acordo com a aba
             const textoBtn = document.getElementById('texto-btn-pdf');
             if (textoBtn) {
                 textoBtn.innerText = btn.dataset.target === 'tab-dados' ? 'Baixar Perfil' : 'Baixar Histórico';
@@ -337,18 +366,13 @@
         };
     });
 
-    // Remover erro ao digitar/mudar o campo
     const formEdicao = document.getElementById('form-edicao-modal');
     formEdicao.addEventListener('input', (e) => {
         document.getElementById('btn-salvar-alteracoes').style.display = 'inline-block';
-        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-            removerErroVisual(e.target);
-        }
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') removerErroVisual(e.target);
     });
     formEdicao.addEventListener('change', (e) => {
-        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
-            removerErroVisual(e.target);
-        }
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') removerErroVisual(e.target);
     });
 
     formEdicao.addEventListener('submit', async (e) => {
@@ -362,7 +386,6 @@
 
         camposObrigatorios.forEach(campo => {
             removerErroVisual(campo);
-            
             if (!campo.value.trim() || campo.value === '') {
                 mostrarErroVisual(campo, 'Este campo é obrigatório.');
                 formValido = false;
@@ -446,25 +469,23 @@
                 campoMarcado = true;
             }
 
-            if (!campoMarcado) {
-                showAlert('Erro', error.message, 'error'); 
-            }
+            if (!campoMarcado) showAlert('Erro', error.message, 'error'); 
         } finally {
             btnSalvar.textContent = 'Salvar Alterações';
             btnSalvar.disabled = false;
         }
     });
 
-    // ================= HISTÓRICO E FILTROS DE DATA =================
+    // ================= HISTÓRICO DE DATA E PAGINAÇÃO =================
     function renderizarHistorico(lista) {
         const container = document.getElementById('lista-historico');
         container.innerHTML = '';
         if(lista.length === 0) {
-            container.innerHTML = '<p style="color:#666;">Nenhum empréstimo registrado no histórico com esta data.</p>'; return;
+            container.innerHTML = '<p style="color:#666; margin-top:15px;">Nenhum empréstimo registrado no histórico para este período.</p>'; 
+            return;
         }
         
         lista.sort((a, b) => b.id - a.id);
-
         const meses = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 
         lista.forEach(emp => {
@@ -502,7 +523,7 @@
                         <span class="ano">${ano}</span>
                     </div>
                     <div class="hist-details">
-                        <h4 style="margin-bottom: 10px;">💻 ${escaparHTML(emp.modelo)} (${escaparHTML(emp.tombamento)})</h4>
+                        <h4 style="margin-bottom: 10px;">💻 Tomb: ${escaparHTML(emp.tombamento)} <span style="font-size:0.8rem; font-weight:normal; color:#cbd5e1;">(N/S: ${escaparHTML(emp.numero_serie || 'N/A')})</span></h4>
                         
                         <div style="font-size: 0.9rem; color: #475569; margin-bottom: 10px;">
                             <p style="margin: 3px 0;" class="hist-info-line"><strong>🟢 Retirado em:</strong> ${dataEmpStr} às ${horaEmpStr}</p>
@@ -519,65 +540,211 @@
         });
     }
 
-    function filtrarHistoricoLocal() {
-        const diaFiltro = document.getElementById('filtro-dia-hist')?.value || 'todos';
-        const mesFiltro = document.getElementById('filtro-mes-hist')?.value || 'todos';
-        const anoFiltro = document.getElementById('filtro-ano-hist')?.value || 'todos';
-
-        const filtrados = historicoAtualModal.filter(emp => {
-            const dEmp = new Date(emp.data_emprestimo);
-            
-            const agora = new Date();
-            if (dEmp > agora) dEmp.setHours(dEmp.getHours() - 3);
-
-            const dia = String(dEmp.getDate()).padStart(2, '0');
-            const mes = String(dEmp.getMonth() + 1).padStart(2, '0');
-            const ano = String(dEmp.getFullYear());
-
-            const passaDia = (diaFiltro === 'todos') || (dia === diaFiltro);
-            const passaMes = (mesFiltro === 'todos') || (mes === mesFiltro);
-            const passaAno = (anoFiltro === 'todos') || (ano === anoFiltro);
-
-            return passaDia && passaMes && passaAno;
-        });
-
-        renderizarHistorico(filtrados);
+    function atualizarPaginaHistUser() {
+        const startIndex = (paginaAtualHistUser - 1) * itensPorPaginaHistUser;
+        const endIndex = startIndex + itensPorPaginaHistUser;
+        const historicoDaPagina = historicoFiltradoModal.slice(startIndex, endIndex);
+        
+        renderizarHistorico(historicoDaPagina);
+        renderizarPaginacaoHistUser(historicoFiltradoModal.length);
     }
 
-    document.getElementById('filtro-dia-hist')?.addEventListener('change', filtrarHistoricoLocal);
-    document.getElementById('filtro-mes-hist')?.addEventListener('change', filtrarHistoricoLocal);
-    document.getElementById('filtro-ano-hist')?.addEventListener('change', filtrarHistoricoLocal);
+    function renderizarPaginacaoHistUser(totalItens) {
+        const paginationContainer = document.getElementById('pagination-historico-user');
+        if (!paginationContainer) return; 
+
+        paginationContainer.innerHTML = '';
+        const totalPaginas = Math.ceil(totalItens / itensPorPaginaHistUser);
+        if (totalPaginas <= 1) return; 
+
+        const prevButton = document.createElement('button');
+        prevButton.innerHTML = '&laquo;'; // Seta Esquerda <
+        prevButton.disabled = (paginaAtualHistUser === 1);
+        prevButton.style.padding = '8px 15px';
+        prevButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (paginaAtualHistUser > 1) { paginaAtualHistUser--; atualizarPaginaHistUser(); }
+        });
+        paginationContainer.appendChild(prevButton);
+
+        for (let i = 1; i <= totalPaginas; i++) {
+            const pageLink = document.createElement('a');
+            pageLink.href = '#';
+            pageLink.textContent = i;
+            if (i === paginaAtualHistUser) pageLink.classList.add('active');
+            pageLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                paginaAtualHistUser = i;
+                atualizarPaginaHistUser();
+            });
+            paginationContainer.appendChild(pageLink);
+        }
+
+        const nextButton = document.createElement('button');
+        nextButton.innerHTML = '&raquo;'; // Seta Direita >
+        nextButton.disabled = (paginaAtualHistUser === totalPaginas);
+        nextButton.style.padding = '8px 15px';
+        nextButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (paginaAtualHistUser < totalPaginas) { paginaAtualHistUser++; atualizarPaginaHistUser(); }
+        });
+        paginationContainer.appendChild(nextButton);
+    }
+
+    function filtrarHistoricoLocal() {
+        const termoNotebook = (document.getElementById('filtro-notebook-hist')?.value || '').toLowerCase();
+        const dataInicio = document.getElementById('filtro-data-inicio-hist')?.value;
+        const dataFim = document.getElementById('filtro-data-fim-hist')?.value;
+
+        historicoFiltradoModal = historicoAtualModal.filter(emp => {
+            const matchNote = (emp.numero_serie || '').toLowerCase().includes(termoNotebook) ||
+                              (emp.tombamento || '').toLowerCase().includes(termoNotebook);
+
+            let passaData = true;
+            const dReal = emp.data_devolucao_real ? new Date(emp.data_devolucao_real) : new Date(emp.data_emprestimo);
+            const dApenasDia = new Date(dReal.getFullYear(), dReal.getMonth(), dReal.getDate());
+
+            if (dataInicio) {
+                const [ano, mes, dia] = dataInicio.split('-');
+                const dInicio = new Date(ano, mes - 1, dia);
+                if (dApenasDia < dInicio) passaData = false;
+            }
+            if (dataFim) {
+                const [ano, mes, dia] = dataFim.split('-');
+                const dFim = new Date(ano, mes - 1, dia);
+                if (dApenasDia > dFim) passaData = false;
+            }
+
+            return matchNote && passaData;
+        });
+
+        paginaAtualHistUser = 1; 
+        atualizarPaginaHistUser();
+    }
+
+    document.getElementById('filtro-notebook-hist')?.addEventListener('input', filtrarHistoricoLocal);
+    document.getElementById('filtro-data-inicio-hist')?.addEventListener('change', filtrarHistoricoLocal);
+    document.getElementById('filtro-data-fim-hist')?.addEventListener('change', filtrarHistoricoLocal);
 
     // ================= FUNÇÕES FINAIS (DOWNLOAD PDF) =================
     document.getElementById('btn-fechar-perfil').onclick = () => document.getElementById('modal-perfil').style.display = 'none';
 
-    // NOVO: Lógica de Exportação Dinâmica
     document.getElementById('btn-baixar-pdf').onclick = () => {
         const textoAtual = document.getElementById('texto-btn-pdf').innerText;
         const nomeAluno = document.getElementById('modal-nome-titulo').textContent.trim().split(' ')[0];
-        
-        let elementoAlvo;
-        let nomeArquivo;
+        const nomeCompleto = document.getElementById('modal-nome-titulo').textContent.trim();
+        const matricula = document.getElementById('edit-matricula').value || 'Não Informada';
+        const dataHoje = new Date().toLocaleDateString('pt-BR');
 
-        // Verifica qual aba está aberta para imprimir o conteúdo correto
         if (textoAtual === 'Baixar Perfil') {
-            elementoAlvo = document.getElementById('tab-dados');
-            nomeArquivo = `Perfil_${nomeAluno}_Genius.pdf`;
+            const elementoAlvo = document.getElementById('tab-dados');
+            const opcoes = {
+                margin: 10,
+                filename: `Perfil_${nomeAluno}_Genius.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opcoes).from(elementoAlvo).save();
+
         } else {
-            elementoAlvo = document.getElementById('tab-historico');
-            nomeArquivo = `Historico_${nomeAluno}_Genius.pdf`;
+            if (historicoFiltradoModal.length === 0) {
+                const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
+                return showAlert('Aviso', 'Não há histórico para exportar com estes filtros.', 'warning');
+            }
+
+            const btn = document.getElementById('btn-baixar-pdf');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+            btn.disabled = true;
+
+            let periodoTexto = 'Período Completo';
+            const inputInicio = document.getElementById('filtro-data-inicio-hist').value;
+            const inputFim = document.getElementById('filtro-data-fim-hist').value;
+            
+            if(inputInicio && inputFim) {
+                const dI = inputInicio.split('-').reverse().join('/');
+                const dF = inputFim.split('-').reverse().join('/');
+                periodoTexto = `${dI} a ${dF}`;
+            }
+
+            setTimeout(() => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF('l', 'mm', 'a4');
+
+                    doc.setFontSize(18);
+                    doc.setTextColor(44, 62, 80);
+                    doc.text(`Histórico de Empréstimos - Aluno`, 14, 20);
+                    
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Aluno: ${nomeCompleto} | Matrícula: ${matricula}`, 14, 28);
+                    doc.text(`Período: ${periodoTexto} | Total de registros: ${historicoFiltradoModal.length}`, 14, 33);
+
+                    const cabecalho = [['Notebook (Tomb / N/S)', 'Retirada', 'Devolução', 'Status', 'Observações']];
+                    
+                    const linhas = historicoFiltradoModal.map(emp => {
+                        const dEmp = new Date(emp.data_emprestimo);
+                        const dReal = emp.data_devolucao_real ? new Date(emp.data_devolucao_real) : null;
+                        const dPrev = new Date(emp.data_devolucao_prevista);
+                        
+                        const dataEmpStr = dEmp.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                        const dataDev = dReal ? dReal.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'Ainda em uso';
+                        
+                        let statusTexto = 'EM ANDAMENTO';
+                        if (dReal) {
+                            let dPrevTolerancia = new Date(dPrev.getTime());
+                            dPrevTolerancia.setMinutes(dPrevTolerancia.getMinutes() + 15);
+                            const noPrazo = dReal <= dPrevTolerancia;
+                            statusTexto = noPrazo ? 'NO PRAZO' : 'COM ATRASO';
+                        }
+
+                        return [
+                            `Tomb: ${emp.tombamento}\nN/S: ${emp.numero_serie || 'N/A'}`,
+                            dataEmpStr,
+                            dataDev,
+                            statusTexto,
+                            emp.observacoes_devolucao || 'Nenhuma.'
+                        ];
+                    });
+
+                    doc.autoTable({
+                        head: cabecalho,
+                        body: linhas,
+                        startY: 40, 
+                        theme: 'grid', 
+                        styles: { font: 'helvetica', fontSize: 9, cellPadding: 5, lineColor: [100, 116, 139], lineWidth: 0.3 },
+                        headStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold', lineColor: [44, 62, 80], lineWidth: 0.3 },
+                        alternateRowStyles: { fillColor: [248, 250, 252] },
+                        columnStyles: {
+                            0: { cellWidth: 55 }, 
+                            1: { cellWidth: 35 }, 
+                            2: { cellWidth: 35 }, 
+                            3: { cellWidth: 35, fontStyle: 'bold' }, 
+                            4: { cellWidth: 'auto' } 
+                        },
+                        didParseCell: function(data) {
+                            if (data.section === 'body' && data.column.index === 3) {
+                                if (data.cell.raw === 'COM ATRASO') { data.cell.styles.textColor = [231, 76, 60]; } 
+                                else if (data.cell.raw === 'NO PRAZO') { data.cell.styles.textColor = [39, 174, 96]; }
+                                else { data.cell.styles.textColor = [52, 152, 219]; }
+                            }
+                        }
+                    });
+
+                    doc.save(`Historico_${nomeAluno}_${dataHoje.replace(/\//g, '-')}.pdf`);
+
+                } catch (error) {
+                    console.error("Erro ao gerar PDF:", error);
+                    const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
+                    showAlert('Erro', 'Ocorreu um erro ao gerar o PDF.', 'error');
+                } finally {
+                    btn.innerHTML = textoOriginal;
+                    btn.disabled = false;
+                }
+            }, 100);
         }
-        
-        const opcoes = {
-            margin: 10,
-            filename: nomeArquivo,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            // Usa retrato (portrait) para o perfil e paisagem (landscape) para histórico
-            jsPDF: { unit: 'mm', format: 'a4', orientation: textoAtual === 'Baixar Histórico' ? 'landscape' : 'portrait' }
-        };
-        
-        html2pdf().set(opcoes).from(elementoAlvo).save();
     };
 
     document.getElementById('edit-cpf')?.addEventListener('input', (e) => e.target.value = formatarCPF(e.target.value));

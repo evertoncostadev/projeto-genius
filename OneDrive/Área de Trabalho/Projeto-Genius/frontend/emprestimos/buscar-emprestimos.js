@@ -38,8 +38,21 @@ function renderizarEmprestimos(emprestimos) {
         const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         const nomeSeguro = escaparHTML(emp.usuario.nome);
-        const cpfSeguro = escaparHTML(emp.usuario.cpf);
         const tombamentoSeguro = escaparHTML(emp.notebook.tombamento);
+
+        // ==========================================
+        // SISTEMA INTELIGENTE DE DOCUMENTO (FALLBACK)
+        // ==========================================
+        let tipoDoc = 'CPF:';
+        let valorDoc = emp.usuario.cpf || 'N/A';
+        
+        // Se a matrícula existir e não for vazia, nós damos preferência a ela!
+        if (emp.usuario.matricula && emp.usuario.matricula.trim() !== '') {
+            tipoDoc = 'Matrícula:';
+            valorDoc = emp.usuario.matricula;
+        }
+        
+        const docSeguro = escaparHTML(valorDoc);
 
         if (statusDaPagina === 'ativo') {
             const dataDev = new Date(emp.dataDevolucaoPrevista).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -63,7 +76,7 @@ function renderizarEmprestimos(emprestimos) {
                     <div class="loan-info-summary">
                         <div class="user-info">
                             <i class="fas fa-user"></i>
-                            <span>${nomeSeguro} (CPF: ${cpfSeguro})</span>
+                            <span>${nomeSeguro} (${tipoDoc} ${docSeguro})</span>
                         </div>
                         <div class="notebook-info">
                             <i class="fas fa-laptop"></i>
@@ -112,7 +125,7 @@ function renderizarEmprestimos(emprestimos) {
                 <div class="loan-info">
                     <div class="user-info">
                         <i class="fas fa-user"></i>
-                        <span>${nomeSeguro} (CPF: ${cpfSeguro})</span>
+                        <span>${nomeSeguro} (${tipoDoc} ${docSeguro})</span>
                     </div>
                     <div class="notebook-info">
                         <i class="fas fa-laptop"></i>
@@ -423,8 +436,11 @@ function aplicarFiltrosEmprestimo() {
     const agora = new Date(); 
 
     emprestimosFiltrados = todosEmprestimos.filter(emp => {
+        // Trocado de CPF para Matrícula na filtragem da barra de busca
         const matchUsuario = (emp.usuario.nome.toLowerCase().includes(termoUsuario) || 
-                                emp.usuario.cpf.toLowerCase().includes(termoUsuario));
+                              (emp.usuario.matricula && emp.usuario.matricula.toLowerCase().includes(termoUsuario)) ||
+                              (emp.usuario.cpf && emp.usuario.cpf.toLowerCase().includes(termoUsuario))); // Permite buscar pelo CPF também como segurança
+                              
         const matchNotebook = emp.notebook.tombamento.toLowerCase().includes(termoNotebook);
 
         let matchStatus = true; 
@@ -587,91 +603,106 @@ window.baixarRelatorioEncerrados = function() {
         periodoTexto = `${dI} a ${dF}`;
     }
 
-    // Inicializa o jsPDF (Orientação Paisagem 'l', unidade 'mm', formato 'A4')
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
+    // Função assíncrona para garantir a renderização antes de liberar o botão
+    setTimeout(() => {
+        try {
+            // Inicializa o jsPDF (Orientação Paisagem 'l', unidade 'mm', formato 'A4')
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
 
-    // 1. Títulos do PDF
-    doc.setFontSize(18);
-    doc.setTextColor(44, 62, 80);
-    doc.text('Histórico de Empréstimos Encerrados', 14, 20);
-    
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Projeto Limites do Visível | Período: ${periodoTexto}`, 14, 28);
-    doc.text(`Gerado em: ${dataHoje} | Total de registros: ${emprestimosFiltrados.length}`, 14, 33);
+            // 1. Títulos do PDF
+            doc.setFontSize(18);
+            doc.setTextColor(44, 62, 80);
+            doc.text('Histórico de Empréstimos Encerrados', 14, 20);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text(`Projeto Limites do Visível | Período: ${periodoTexto}`, 14, 28);
+            doc.text(`Gerado em: ${dataHoje} | Total de registros: ${emprestimosFiltrados.length}`, 14, 33);
 
-    // 2. Preparar os Cabeçalhos e as Linhas da Tabela
-    const cabecalho = [['Aluno / CPF', 'Notebook', 'Retirada', 'Devolução', 'Status', 'Observações']];
-    
-    const linhas = emprestimosFiltrados.map(emp => {
-        const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
-        const dataDev = emp.dataDevolucaoReal ? new Date(emp.dataDevolucaoReal).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
-        const dataDevPrevista = new Date(emp.dataDevolucaoPrevista);
-        const dataDevolucaoRealDate = new Date(emp.dataDevolucaoReal);
-        
-        const foiAtrasado = emp.dataDevolucaoReal && dataDevolucaoRealDate > dataDevPrevista;
-        const statusTexto = foiAtrasado ? 'COM ATRASO' : 'NO PRAZO';
+            // Cabeçalho da Tabela
+            const cabecalho = [['Aluno / Documento', 'Notebook', 'Retirada', 'Devolução', 'Status', 'Observações']];
+            
+            const linhas = emprestimosFiltrados.map(emp => {
+                const dataEmp = new Date(emp.dataEmprestimo).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const dataDev = emp.dataDevolucaoReal ? new Date(emp.dataDevolucaoReal).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'N/A';
+                const dataDevPrevista = new Date(emp.dataDevolucaoPrevista);
+                const dataDevolucaoRealDate = new Date(emp.dataDevolucaoReal);
+                
+                const foiAtrasado = emp.dataDevolucaoReal && dataDevolucaoRealDate > dataDevPrevista;
+                const statusTexto = foiAtrasado ? 'COM ATRASO' : 'NO PRAZO';
 
-        return [
-            `${emp.usuario.nome}\nCPF: ${emp.usuario.cpf}`,
-            emp.notebook.tombamento,
-            dataEmp,
-            dataDev,
-            statusTexto,
-            emp.observacoesDevolucao || 'Nenhuma.'
-        ];
-    });
-
-    // 3. Desenhar a Tabela Mágica com as Linhas (Bordas) Solicitadas
-    doc.autoTable({
-        head: cabecalho,
-        body: linhas,
-        startY: 40, 
-        theme: 'grid', // O tema 'grid' desenha as linhas horizontais e verticais
-        styles: { 
-            font: 'helvetica', 
-            fontSize: 9,
-            cellPadding: 5, // Dá um pequeno respiro no texto dentro da célula
-            lineColor: [100, 116, 139], // Define a cor da linha (um tom de cinza azulado bem elegante)
-            lineWidth: 0.3 // Engrossa a linha para ficar perfeitamente visível (como no seu desenho)
-        },
-        headStyles: { 
-            fillColor: [44, 62, 80], 
-            textColor: 255, 
-            fontStyle: 'bold',
-            lineColor: [44, 62, 80], // Remove bordas claras do cabeçalho
-            lineWidth: 0.3
-        },
-        alternateRowStyles: {
-            fillColor: [248, 250, 252] // Efeito zebra hiper sutil (fundo branco / fundo cinza clarinho)
-        },
-        columnStyles: {
-            0: { cellWidth: 55 }, // Coluna Aluno
-            1: { cellWidth: 30 }, // Notebook
-            2: { cellWidth: 35 }, // Retirada
-            3: { cellWidth: 35 }, // Devolução
-            4: { cellWidth: 25, fontStyle: 'bold' }, // Status
-            5: { cellWidth: 'auto' } // Observações pega o resto do espaço
-        },
-        didParseCell: function(data) {
-            // Pinta o texto da coluna de "Status" de verde ou vermelho automaticamente
-            if (data.section === 'body' && data.column.index === 4) {
-                if (data.cell.raw === 'COM ATRASO') {
-                    data.cell.styles.textColor = [231, 76, 60]; // Vermelho
-                } else {
-                    data.cell.styles.textColor = [39, 174, 96]; // Verde
+                // Sistema Inteligente de PDF também (Matrícula ou CPF)
+                let docTexto = `CPF: ${emp.usuario.cpf || 'N/A'}`;
+                if (emp.usuario.matricula && emp.usuario.matricula.trim() !== '') {
+                    docTexto = `Mat: ${emp.usuario.matricula}`;
                 }
-            }
+
+                return [
+                    `${emp.usuario.nome}\n${docTexto}`,
+                    emp.notebook.tombamento,
+                    dataEmp,
+                    dataDev,
+                    statusTexto,
+                    emp.observacoesDevolucao || 'Nenhuma.'
+                ];
+            });
+
+            // 3. Desenhar a Tabela Mágica com as Linhas (Bordas)
+            doc.autoTable({
+                head: cabecalho,
+                body: linhas,
+                startY: 40, 
+                theme: 'grid', 
+                styles: { 
+                    font: 'helvetica', 
+                    fontSize: 9,
+                    cellPadding: 5, 
+                    lineColor: [100, 116, 139], 
+                    lineWidth: 0.3 
+                },
+                headStyles: { 
+                    fillColor: [44, 62, 80], 
+                    textColor: 255, 
+                    fontStyle: 'bold',
+                    lineColor: [44, 62, 80], 
+                    lineWidth: 0.3
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 252] 
+                },
+                columnStyles: {
+                    0: { cellWidth: 55 }, // Coluna Aluno
+                    1: { cellWidth: 30 }, // Notebook
+                    2: { cellWidth: 35 }, // Retirada
+                    3: { cellWidth: 35 }, // Devolução
+                    4: { cellWidth: 25, fontStyle: 'bold' }, // Status
+                    5: { cellWidth: 'auto' } // Observações
+                },
+                didParseCell: function(data) {
+                    if (data.section === 'body' && data.column.index === 4) {
+                        if (data.cell.raw === 'COM ATRASO') {
+                            data.cell.styles.textColor = [231, 76, 60]; 
+                        } else {
+                            data.cell.styles.textColor = [39, 174, 96]; 
+                        }
+                    }
+                }
+            });
+
+            // 4. Salvar o Arquivo
+            doc.save(`Relatorio_Encerrados_${dataHoje.replace(/\//g, '-')}.pdf`);
+
+        } catch (error) {
+            console.error("Erro ao gerar PDF:", error);
+            const showAlert = typeof showCustomAlert === 'function' ? showCustomAlert : alert;
+            showAlert('Erro', 'Ocorreu um erro ao gerar o PDF.', 'error');
+        } finally {
+            // Restaura o botão independentemente de dar erro ou sucesso
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
         }
-    });
-
-    // 4. Salvar o Arquivo
-    doc.save(`Relatorio_Encerrados_${dataHoje.replace(/\//g, '-')}.pdf`);
-
-    // Restaura o botão
-    btn.innerHTML = textoOriginal;
-    btn.disabled = false;
+    }, 100); 
 };
 
 setTimeout(buscarEmprestimos, 0);

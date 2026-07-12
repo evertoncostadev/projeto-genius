@@ -85,12 +85,12 @@ class Emprestimo {
      * @returns {Promise<Array<object>>}
      */
     static async findAllPopulado(status) {
-        // CORREÇÃO: Adicionado o u.telefone AS usuario_telefone na busca
+        // CORREÇÃO: Adicionado u.matricula AS usuario_matricula na busca SQL
         let query = `
             SELECT 
                 e.id, e.status, e.data_emprestimo, e.data_devolucao_prevista, 
                 e.data_devolucao_real, e.observacoes_emprestimo, e.observacoes_devolucao, e.acessorios,
-                u.nome AS usuario_nome, u.cpf AS usuario_cpf, u.telefone AS usuario_telefone,
+                u.nome AS usuario_nome, u.cpf AS usuario_cpf, u.telefone AS usuario_telefone, u.matricula AS usuario_matricula,
                 n.tombamento AS notebook_tombamento
             FROM emprestimos e
             LEFT JOIN usuarios u ON e.usuario_id = u.id
@@ -127,7 +127,8 @@ class Emprestimo {
                 usuario: {
                     nome: row.usuario_nome || 'Usuário Deletado',
                     cpf: row.usuario_cpf || 'N/A',
-                    telefone: row.usuario_telefone || '' // CORREÇÃO: Enviando o telefone para a tela
+                    telefone: row.usuario_telefone || '', 
+                    matricula: row.usuario_matricula || '' // CORREÇÃO: Enviando a matrícula para o Frontend!
                 },
                 notebook: {
                     tombamento: row.notebook_tombamento || 'Notebook Deletado'
