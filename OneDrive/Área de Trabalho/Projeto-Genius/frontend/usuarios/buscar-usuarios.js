@@ -93,7 +93,9 @@
 
             let avatarHTML = `<i class="fas fa-user-circle avatar"></i>`;
             if (user.foto_perfil) {
-                const fotoUrl = `http://localhost:3000/${user.foto_perfil.replace(/\\/g, '/')}`;
+                // CORREÇÃO: Enviando o Token na URL da Foto do Card
+                const tokenUrl = localStorage.getItem('token');
+                const fotoUrl = `http://localhost:3000/${user.foto_perfil.replace(/\\/g, '/')}?token=${tokenUrl}`;
                 avatarHTML = `<img src="${fotoUrl}" class="avatar-img" alt="Foto">`;
             }
 
@@ -187,13 +189,11 @@
                    (tPeriodo === "" || u.periodo == tPeriodo);
         });
 
-        // APLICAÇÃO DA ORDENAÇÃO
         if (tOrdem === 'az') {
             usuariosFiltrados.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
         } else if (tOrdem === 'za') {
             usuariosFiltrados.sort((a, b) => (b.nome || '').localeCompare(a.nome || ''));
         }
-        // Se for 'padrao', ele mantém a ordem original inteligente do backend
 
         paginaAtual = 1; 
         atualizarPagina(); 
@@ -280,7 +280,10 @@
     function preencherModal({ usuario, ativo, historico }) {
         document.getElementById('modal-nome-titulo').textContent = usuario.nome;
         const f = document.getElementById('modal-foto');
-        f.innerHTML = usuario.foto_perfil ? `<img src="http://localhost:3000/${usuario.foto_perfil.replace(/\\/g, '/')}" alt="Foto">` : `<i class="fas fa-user-circle"></i>`;
+        const tokenAtual = localStorage.getItem('token');
+        
+        // CORREÇÃO: Enviando o Token na URL da Foto do Modal
+        f.innerHTML = usuario.foto_perfil ? `<img src="http://localhost:3000/${usuario.foto_perfil.replace(/\\/g, '/')}?token=${tokenAtual}" alt="Foto">` : `<i class="fas fa-user-circle"></i>`;
 
         const alerta = document.getElementById('alerta-emprestimo');
         if (ativo) {
@@ -330,8 +333,9 @@
         document.getElementById('edit-uf').value = usuario.uf || '';
 
         const links = [];
-        if(usuario.arquivo_declaracao) links.push(`<a href="http://localhost:3000/${usuario.arquivo_declaracao.replace(/\\/g, '/')}" target="_blank" style="color:#3498db; font-weight:bold;">📄 Ver Declaração</a>`);
-        if(usuario.arquivo_termo) links.push(`<a href="http://localhost:3000/${usuario.arquivo_termo.replace(/\\/g, '/')}" target="_blank" style="color:#3498db; font-weight:bold;">📄 Ver Termo</a>`);
+        // CORREÇÃO: Enviando o Token na URL dos PDFs
+        if(usuario.arquivo_declaracao) links.push(`<a href="http://localhost:3000/${usuario.arquivo_declaracao.replace(/\\/g, '/')}?token=${tokenAtual}" target="_blank" style="color:#3498db; font-weight:bold;">📄 Ver Declaração</a>`);
+        if(usuario.arquivo_termo) links.push(`<a href="http://localhost:3000/${usuario.arquivo_termo.replace(/\\/g, '/')}?token=${tokenAtual}" target="_blank" style="color:#3498db; font-weight:bold;">📄 Ver Termo</a>`);
         document.getElementById('modal-docs-links').innerHTML = links.length ? links.join(' | ') : 'Nenhum documento anexado.';
 
         document.getElementById('btn-salvar-alteracoes').style.display = 'none';
@@ -476,7 +480,6 @@
         }
     });
 
-    // ================= HISTÓRICO DE DATA E PAGINAÇÃO =================
     function renderizarHistorico(lista) {
         const container = document.getElementById('lista-historico');
         container.innerHTML = '';
@@ -626,7 +629,6 @@
     document.getElementById('filtro-data-inicio-hist')?.addEventListener('change', filtrarHistoricoLocal);
     document.getElementById('filtro-data-fim-hist')?.addEventListener('change', filtrarHistoricoLocal);
 
-    // ================= FUNÇÕES FINAIS (DOWNLOAD PDF) =================
     document.getElementById('btn-fechar-perfil').onclick = () => document.getElementById('modal-perfil').style.display = 'none';
 
     document.getElementById('btn-baixar-pdf').onclick = () => {
