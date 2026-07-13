@@ -6,10 +6,10 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const cron = require('node-cron');
+const rateLimit = require('express-rate-limit'); // Nova biblioteca
 
-// 🚨 Verificação Crítica de Segurança (Resolvendo Erro 1B)
 if (!process.env.JWT_SECRET) {
-    console.error("ERRO CRÍTICO: JWT_SECRET não configurado no arquivo .env!");
+    console.error("ERRO CRÍTICO: JWT_SECRET não configurado no ficheiro .env!");
     process.exit(1); 
 }
 
@@ -17,7 +17,6 @@ const db = require('./db_conexao');
 const EmailService = require('./services/emailService');
 const { autenticarToken, apenasAdmin } = require('./middlewares/authMiddleware');
 
-// Importando as Rotas MVC
 const authRoutes = require('./routes/authRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const notebookRoutes = require('./routes/notebookRoutes');
@@ -29,24 +28,38 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// 🚨 ROTA BLINDADA DE ARQUIVOS (Resolvendo Erro 1A)
+// 🚨 RESOLUÇÃO DO PONTO 1: Proteção contra Força Bruta (Brute Force/DDoS)
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 10, // Limite de 10 tentativas por IP
+    message: { message: 'Muitas tentativas de acesso. Por segurança, aguarde 15 minutos para tentar novamente.' }
+});
+
+// Aplica o escudo apenas nas rotas de autenticação
+app.use('/api/login', loginLimiter);
+app.use('/api/esqueci-senha', loginLimiter);
+
+
+// 🚨 RESOLUÇÃO DO PONTO 4: Rota de ficheiros blindada contra Directory Traversal
 app.get('/uploads/:filename', autenticarToken, apenasAdmin, (req, res) => {
-    const filePath = path.join(__dirname, 'uploads', req.params.filename);
+    // path.basename() arranca qualquer tentativa de "../" do nome do ficheiro
+    const safeFilename = path.basename(req.params.filename); 
+    const filePath = path.join(__dirname, 'uploads', safeFilename);
+    
     if (fs.existsSync(filePath)) {
         res.sendFile(filePath);
     } else {
-        res.status(404).json({ message: 'Arquivo não encontrado.' });
+        res.status(404).json({ message: 'Ficheiro não encontrado.' });
     }
 });
 
-// Registrando as Rotas
+// Registar Rotas
 app.use('/', authRoutes);
 app.use('/', usuarioRoutes);
 app.use('/', notebookRoutes);
 app.use('/', emprestimoRoutes);
 app.use('/', dashboardRoutes);
 
-// Tratamento de erros de upload global
 app.use((err, req, res, next) => {
     if (err.message && err.message.includes('Formato de arquivo inválido')) {
         return res.status(400).json({ message: err.message });
@@ -54,9 +67,9 @@ app.use((err, req, res, next) => {
     next(err);
 });
 
-// 🚀 ROBÔ DE VERIFICAÇÃO DE ATRASOS (Com Delay Antibloqueio)
+// Cron Job (Robô de e-mails com delay antibloqueio)
 cron.schedule('0 * * * *', async () => {
-    console.log('[CRON] Verificando empréstimos atrasados...');
+    console.log('[CRON] A verificar empréstimos atrasados...');
     try {
         const query = `
             SELECT e.*, u.nome, u.email, n.tombamento 
@@ -71,12 +84,10 @@ cron.schedule('0 * * * *', async () => {
             
             await EmailService.enviarCobrancaAtraso(usuario, notebook, emp);
             await db.query('UPDATE emprestimos SET notificacao_atraso_enviada = true WHERE id = $1', [emp.id]);
-            
-            // Delay de 2 segundos para o Gmail não bloquear a conta por Spam (Resolvendo Erro 4B)
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
     } catch (error) { console.error('[CRON Erro]:', error.message); }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { console.log(`🚀 Servidor protegido rodando na porta ${PORT}`); });
+app.listen(PORT, () => { console.log(`🚀 Servidor protegido a correr na porta ${PORT}`); });

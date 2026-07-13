@@ -22,20 +22,31 @@ router.get('/api/emprestimo-dados', autenticarToken, apenasAdmin, async (req, re
 router.post('/emprestimos', autenticarToken, apenasAdmin, async (req, res) => {
     try {
         const { usuarioId, notebookId, senha_aluno, ...outrosDados } = req.body;
+        
         const usuario = (await db.query("SELECT * FROM usuarios WHERE id = $1", [parseInt(usuarioId)])).rows[0];
-        if (!usuario || !usuario.ativo || usuario.tipo_conta !== 'comum') return res.status(400).json({ message: 'Usuário inválido.' });
+        if (!usuario || !usuario.ativo || usuario.tipo_conta !== 'comum') return res.status(400).json({ message: 'Utilizador inválido.' });
 
         const senhaValida = await bcrypt.compare(senha_aluno, usuario.senha);
         if (!senhaValida) return res.status(401).json({ message: 'Senha do aluno incorreta! Empréstimo não autorizado.' });
         
-        const notebook = await Notebook.findById(parseInt(notebookId)); 
-        if (!notebook || notebook.status !== 'disponivel') return res.status(400).json({ message: 'Notebook indisponível.' });
-        
         if (await Emprestimo.findActiveByUsuario(parseInt(usuarioId))) return res.status(409).json({ message: 'Já possui empréstimo ativo.' });
         
+        // 🚨 RESOLUÇÃO DO PONTO 2: Atualização Atómica (Bloqueia Race Condition)
+        // O sistema tenta reservar a máquina no banco. Se 2 pessoas clicarem juntas, só 1 consegue.
+        const updateNotebook = await db.query(
+            "UPDATE notebooks SET status = 'emprestado' WHERE id = $1 AND status = 'disponivel' RETURNING *",
+            [parseInt(notebookId)]
+        );
+
+        if (updateNotebook.rows.length === 0) {
+            return res.status(409).json({ message: 'Este notebook já foi emprestado ou está indisponível neste exato momento!' });
+        }
+        
+        // Só cria o histórico se a reserva da máquina tiver dado certo
+        const notebookReservado = updateNotebook.rows[0];
         const novoEmp = await Emprestimo.create({ usuarioId, notebookId, ...outrosDados }); 
-        await Notebook.updateStatus(notebook.id, 'emprestado'); 
-        EmailService.enviarConfirmacaoEmprestimo(usuario, notebook, novoEmp);
+        
+        EmailService.enviarConfirmacaoEmprestimo(usuario, notebookReservado, novoEmp);
         res.status(201).json({ message: 'Sucesso' });
     } catch (error) { res.status(500).json({ message: 'Erro interno.' }); }
 });
